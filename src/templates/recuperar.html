@@ -1,0 +1,91 @@
+<html lang="es"> 
+<head>     
+    <meta charset="UTF-8">     
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">     
+    <title>Recuperar Contraseña</title>     
+    <style>         
+        body {             
+            font-family: 'Arial', sans-serif;             
+            background-color: white;             
+            display: flex;             
+            justify-content: center;             
+            align-items: center;             
+            height: 100vh;             
+            margin: 0;         
+        }          
+
+        .container {             
+            width: 100%;             
+            max-width: 600px;             
+            padding: 30px 30px 10px 30px;             
+            text-align: center;             
+            border: 1px solid #e5e7eb;             
+            border-radius: 20px;             
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);             
+        }          
+
+        .header {             
+            background-color: #38b2ac;  
+            font-weight: bold;
+            font-family: "Comic Sans Ms";             
+            padding: 5px;             
+            border-radius: 10px;    
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);             
+        }          
+
+        .header h1 {             
+            color: white;             
+            font-size: 1.25rem;         
+        }          
+
+        .content {             
+            text-align: left;             
+            margin-bottom: 20px;         
+        }          
+
+        .content p {             
+            color: #4b5563;             
+            text-align: justify;         
+        }          
+
+        .link {             
+            color: #38b2ac;             
+            text-decoration: none;             
+            font-weight: bold;   
+        }          
+
+        .link:hover {             
+            text-decoration: underline;         
+        }     
+
+        .title{
+            font-weight: bold;
+            margin-top: 25px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+    </style> 
+</head> 
+<body>     
+    <div class="container">         
+        <div class="header">             
+            <h1>Recuperación de Contraseña</h1>         
+        </div>         
+        <div class="content">  
+            <p class="title">Recuperar cuenta</p>           
+            <p>Para restablecer tu contraseña y recuperar el acceso a tu cuenta de %APP_NAME%, haz clic en el siguiente enlace:</p>         
+        </div>         
+        <a href="%LINK%" class="link">%LINK%</a>     
+        
+        <div class="footer">
+            <p>&copy; 2025 Pequeño Mordelón - Todos los derechos reservados.</p>
+        </div>
+    </div> 
+</body> 
+</html>
