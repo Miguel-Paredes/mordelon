@@ -13,7 +13,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between flex-wrap bg-cyan-700 pl-2 pr-6 md:px-20 py-2 shadow-md">
+    <nav className="flex items-center justify-between flex-wrap bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-700 pl-2 pr-6 md:px-20 py-2 shadow-lg md:rounded-b-3xl">
       <div className="flex items-center flex-shrink-0 text-white w-4/5 md:w-max">
         <Image
           src="/logo.png"
@@ -34,7 +34,7 @@ export const Navbar = () => {
       <div
         className={`${
           isOpen ? "flex" : "hidden"
-        } absolute top-20 shadow-sm md:shadow-none left-0 w-full opacity-100 rounded-b-2xl md:rounded-none bg-cyan-900 md:bg-cyan-700 md:static md:flex md:items-center md:w-auto z-50`}
+        } absolute top-20 shadow-sm md:shadow-none left-0 w-full opacity-100 rounded-b-2xl md:rounded-none bg-cyan-700 md:bg-transparent md:static md:flex md:items-center md:w-auto z-50`}
       >
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 w-full p-4 md:p-0">
           <Link href="/" className="text-white rounded-lg hover:underline">
