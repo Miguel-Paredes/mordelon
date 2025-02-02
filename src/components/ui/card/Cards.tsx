@@ -7,6 +7,7 @@ interface Producto {
   descripcion: string;
   precio: string;
   imagen: string;
+  url: string
 }
 
 export const Cards = () => {
@@ -18,6 +19,7 @@ export const Cards = () => {
         "Favorecen la estimulación y el desarrollo sensorial de tu bebé.",
       precio: "$10.00",
       imagen: "/collares-mordedores.jpg",
+      url: 'collares-de-lactancia'
     },
     {
       id: 2,
@@ -26,6 +28,7 @@ export const Cards = () => {
         "Mantén el chupón limpio y siempre a mano, favoreciendo la comodidad de tu bebé.",
       precio: "$15.00",
       imagen: "/portachupón.png",
+      url: 'portachupón'
     },
     {
       id: 3,
@@ -34,6 +37,7 @@ export const Cards = () => {
         "Perfecto para aliviar las molestias de la dentición, fácil de llevar y evitar que se pierda.",
       precio: "$20.00",
       imagen: "/portamordedor.png",
+      url: 'portamordedor'
     },
   ];
   return (
@@ -62,7 +66,7 @@ export const Cards = () => {
           </div>
           <div className="flex justify-center mb-2">
             <Link
-              href={""}
+              href={`/${producto.url}`}
               className="w-max rounded-lg px-4 py-2 bg-blue-400 hover:bg-blue-300 hover:underline"
             >
               Ver más
