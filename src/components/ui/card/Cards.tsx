@@ -41,7 +41,7 @@ export const Cards = () => {
     },
   ];
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-10">
       {productos.map((producto) => (
         <div
           key={producto.id}
@@ -52,9 +52,9 @@ export const Cards = () => {
             alt={producto.nombre}
             width={1000}
             height={1000}
-            className="w-full h-48 object-cover"
+            className="w-full h-52 object-cover"
           />
-          <div className="p-6">
+          <div className="p-4">
             <h3 className="text-xl font-semibold text-center">
               {producto.nombre}
             </h3>
@@ -64,10 +64,10 @@ export const Cards = () => {
               {producto.precio}
             </p>
           </div>
-          <div className="flex justify-center mb-2">
+          <div className="flex justify-center mb-2 px-4 pb-2">
             <Link
               href={`/${producto.url}`}
-              className="w-max rounded-lg px-4 py-2 bg-blue-400 hover:bg-blue-300 hover:underline"
+              className="w-full text-center rounded-lg px-4 py-2 text-white bg-cyan-700 hover:bg-cyan-600 hover:shadow-xl"
             >
               Ver más
             </Link>

@@ -1,42 +1,57 @@
-import { titleFont } from "@/config/font";
+'use client'
+import { comicSansFont, titleFont } from "@/config/font";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 export const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <nav className="flex items-center justify-between flex-wrap bg-teal-500 p-6">
-      <div className="flex items-center flex-shrink-0 text-white mr-6 w-4/5 md:w-max">
+    <nav className="flex items-center justify-between flex-wrap bg-cyan-700 pl-2 pr-6 md:px-20 py-2 shadow-md">
+      <div className="flex items-center flex-shrink-0 text-white w-4/5 md:w-max">
         <Image
           src="/logo.png"
-          width={1000}
-          height={1000}
+          width={300}
+          height={300}
           alt="manzana"
           className="w-16 h-16 rounded-full"
         />
-        <h1
-          className={`${titleFont.className} antialiased pt-4 pl-3 text-3xl md:text-5xl`}
-        >
+        <h1 className={`${comicSansFont.className} antialiased pl-3 text-xl md:text-2xl`}>
           Pequeño Mordelón
         </h1>
       </div>
-      <div className="hidden md:block w-max">
-        <div className="flex justify-between w-full">
-            <Link href={"/"} className="mx-2 p-4 bg-black text-white rounded-lg hover:underline hover:bg-gray-500">
+      <div className="md:hidden">
+        <button onClick={toggleMenu} className="text-white focus:outline-none">
+          {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+        </button>
+      </div>
+      <div
+        className={`${
+          isOpen ? "flex" : "hidden"
+        } absolute top-20 shadow-sm md:shadow-none left-0 w-full opacity-100 rounded-b-2xl md:rounded-none bg-cyan-900 md:bg-cyan-700 md:static md:flex md:items-center md:w-auto z-50`}
+      >
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 w-full p-4 md:p-0">
+          <Link href="/" className="text-white rounded-lg hover:underline">
             Inicio
-            </Link>
-            <Link href={""} className="mx-2 p-4 bg-black text-white rounded-lg hover:underline hover:bg-gray-500">
+          </Link>
+          <Link href={""} className="text-white rounded-lg hover:underline">
             Collares
-            </Link>
-            <Link href={""} className="mx-2 p-4 bg-black text-white rounded-lg hover:underline hover:bg-gray-500">
+          </Link>
+          <Link href={""} className="text-white rounded-lg hover:underline">
             Portachupón
-            </Link>
-            <Link href={""} className="mx-2 p-4 bg-black text-white rounded-lg hover:underline hover:bg-gray-500">
+          </Link>
+          <Link href={""} className="text-white rounded-lg hover:underline">
             Portamordedor
-            </Link>
-            <Link href={""} className="mx-2 p-4 bg-black text-white rounded-lg hover:underline hover:bg-gray-500">
+          </Link>
+          <Link href={""} className="text-white rounded-lg hover:underline">
             Contacto
-            </Link>
+          </Link>
         </div>
       </div>
     </nav>
