@@ -1,3 +1,4 @@
+import { fontparrafo } from "@/config/font";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -58,7 +59,7 @@ export const Cards = () => {
             <h3 className="text-xl font-semibold text-center">
               {producto.nombre}
             </h3>
-            <p className="text-gray-600 mt-2">{producto.descripcion}</p>
+            <p className={`text-gray-600 mt-2 ${fontparrafo.className}`}>{producto.descripcion}</p>
             <p className="text-blue-600 font-bold mt-4">
               <span className="text-gray-600 font-semibold">Desde los: </span>
               {producto.precio}

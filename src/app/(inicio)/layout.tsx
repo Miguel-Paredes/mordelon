@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import { Toaster } from "react-hot-toast";
+import "../globals.css";
+import { Footer, Navbar } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Pequeño Mordelón",
@@ -13,11 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        {children}
-        <Toaster/>
-      </body>
-    </html>
+    <main>
+      <Navbar />
+      {children}
+      <Footer />
+    </main>
   );
 }
