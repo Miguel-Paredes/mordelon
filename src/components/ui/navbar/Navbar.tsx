@@ -52,6 +52,9 @@ export const Navbar = () => {
           <Link href={""} className="text-white rounded-lg hover:underline">
             Contacto
           </Link>
+          <Link href={"/auth"} className="text-white rounded-lg hover:underline">
+            Iniciar Sesión
+          </Link>
         </div>
       </div>
     </nav>

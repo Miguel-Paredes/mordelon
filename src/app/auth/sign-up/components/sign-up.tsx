@@ -49,23 +49,28 @@ export default function SignUp() {
   const onSubmit = async (user: z.infer<typeof formSchema>) => {
     console.log(user);
     setisLoading(true);
+    let cuenta = true;
     try {
-      await CreateUser(user);
-      await updateUser({ displayName: user.name });
       setCreateCount(true);
+      const usercreate = await CreateUser(user);
+      await updateUser({ displayName: user.name });
+      user.uid = usercreate.user.uid;
+      await createUserInDB(user as User);
+      toast.success(`Bienvenido ${user.name}`, { duration: 5000 });
+      cuenta = false
     } catch (error: any) {
-      toast.error(
-        // Mostramos el mensaje de error
-        error.message,
-        // Duracion que se ve el mensaje
-        { duration: 5000 }
-      );
+      const errorCreateUser = error.code;
+      if (errorCreateUser === "auth/email-already-in-use") {
+        return toast.error("El correo ya está en uso", { duration: 5000 });
+      } else if (errorCreateUser === "auth/invalid-email") {
+        return toast.error("El correo no es válido", { duration: 5000 });
+      }
     } finally {
       setisLoading(false);
       setTimeout(() => {
         setCreateCount(false);
       }, 5000);
-      redirect('/auth')
+      if (!cuenta) return redirect("/auth");
     }
   };
 
@@ -73,6 +78,7 @@ export default function SignUp() {
     const path = `users/${user.uid}`;
     setisLoading(true);
     try {
+      delete user.password;
       await setDocument(path, user);
     } catch (error: any) {
       toast.error(error.message, { duration: 5000 });
@@ -156,13 +162,6 @@ export default function SignUp() {
           Volver
         </Link>
       </p>
-      <div>
-        {createCount && (
-          <div className="text-green-400 text-center">
-            Revisa tu correo para verificar tu cuenta
-          </div>
-        )}
-      </div>
     </>
   );
 }

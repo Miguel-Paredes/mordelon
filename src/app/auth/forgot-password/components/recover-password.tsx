@@ -6,13 +6,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { singIn } from "@/lib/firebase";
+import { sendtResetEmail, singIn } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export default function SignIn() {
+export default function RecoverPassword() {
   const [isLoading, setisLoading] = useState<boolean>(false);
-
+  const router = useRouter()
   // ! Información necesaria para el registro de credenciales
   const formSchema = z.object({
     email: z
@@ -21,9 +22,6 @@ export default function SignIn() {
       .min(1, {
         message: "Este campo es requerido",
       }),
-    password: z.string().min(6, {
-      message: "La contraseña debe tener al menos 6 caracteres",
-    }),
   });
 
   // * Validación de datos
@@ -31,7 +29,6 @@ export default function SignIn() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
@@ -42,10 +39,8 @@ export default function SignIn() {
   const onSubmit = async (user: z.infer<typeof formSchema>) => {
     setisLoading(true);
     try {
-      const singInUser = await singIn(user);
-      if (singInUser.success == false)
-        return toast.error(singInUser.message, { duration: 5000 });
-      toast(`!Bienvenido¡`, { duration: 5000, icon: "😎" });
+      await sendtResetEmail(user.email)
+      router.push('/')
     } catch (error: any) {
       toast.error(
         // Mostramos el mensaje de error
@@ -59,11 +54,11 @@ export default function SignIn() {
   };
 
   return (
-    <>
+    <div className="md:border border-solid border-x-gray-300 rounded-xl p-10">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold">Login</h1>
+        <h1 className="text-2xl font-semibold">Recuperar contraseña</h1>
         <p className="text-sm text-muted-foreground">
-          Coloca tu email y contraseña para poder acceder
+          Te enviaremos un correo para que puedas recuperar tu contraseña
         </p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -79,50 +74,26 @@ export default function SignIn() {
               autoComplete="email"
             />
           </div>
-          <div className="flex justify-center">
-            <span className="text-red-500 w-max rounded-lg pt-1">
+            <span className="text-red-500 w-auto rounded-lg pt-1 text-center">
               {errors.email?.message}
             </span>
-          </div>
-          {/* Contraseña */}
-          <div className="mb-3">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              {...register("password")}
-              id="password"
-              placeholder="******"
-              type="password"
-            />
-          </div>
-          <div className="flex justify-center">
-            <span className="text-red-500 w-max rounded-lg pt-1">
-              {errors.password?.message}
-            </span>
-          </div>
-          <Link
-            href={"/auth/forgot-password"}
-            className="underline text-muted-foreground underline-offset-4 hover:text-primary mb-6 text-sm text-end"
-          >
-            ¿Olvidaste tu contraseña?
-          </Link>
           <Button type="submit">
             {isLoading ? (
               <LoaderCircle className="w-6 h-6 animate-spin" />
             ) : (
-              "Ingresar"
+              "Recuperar contraseña"
             )}
           </Button>
         </div>
       </form>
-      <p className="text-center text-sm text-muted-foreground">
-        No tienes cuenta?{" "}
+      <p className="text-center text-sm text-muted-foreground mt-3">
         <Link
-          href={"/auth/sign-up"}
+          href={"/auth"}
           className="underline underline-offset-4 hover:text-primary"
         >
-          Registrarse
+          Regresar
         </Link>
       </p>
-    </>
+    </div>
   );
 }

@@ -1,7 +1,23 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, getDoc, getFirestore, serverTimestamp, setDoc } from 'firebase/firestore'
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -14,83 +30,105 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_MEASUREMENT_ID
+  measurementId: process.env.NEXT_PUBLIC_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 // Para proteger rutas
-export const auth = getAuth(app)
+export const auth = getAuth(app);
 // Para conectarse con la base de datos
-export const db = getFirestore(app)
+export const db = getFirestore(app);
 
 // Iniciar sesion
-export const singIn = async ( user : { email : string, password : string } ) => {
-  return await signInWithEmailAndPassword(auth, user.email, user.password)
+export const singIn = async (user: { email: string; password: string }) => {
+  try {
+    // Esperar la respuesta de la consulta
+    const informacion = await getUserByEmail(user.email);
+
+    // Verificar si el usuario no existe
+    if (!informacion) {
+      return { success: false, message: "Ese usuario no existe" };
+    }
+
+    // Intentar iniciar sesión
+    await signInWithEmailAndPassword(auth, user.email, user.password);
+  } catch (error: any) {
+    // Manejar errores específicos de autenticación
+    if (error.code === "auth/invalid-credential") {
+      return { success: false, message: "Usuario y/o contraseña incorrectos" };
+    } else {
+      return { success: false, message: error.code };
+    }
+  }
+  return { success: true, message: "Bienvenido" };
+};
+
+async function getUserByEmail(email: string) {
+  // Accedemos a la colección 'users'
+  const usersCollectionRef = collection(db, "users");
+
+  // Obtenemos los documentos de la colección de usuarios
+  const querySnapshot = await getDocs(usersCollectionRef);
+
+  // Recorremos todos los documentos (usuarios) dentro de la colección 'users'
+  for (const userDoc of querySnapshot.docs) {
+    // Accedemos a la subcolección con el nombre del ID del usuario
+    const userSubCollectionRef = collection(db, "users", userDoc.id, userDoc.id); 
+
+    // Creamos una consulta para filtrar por correo electrónico dentro de esa subcolección
+    const q = query(userSubCollectionRef, where("email", "==", email));
+
+    // Obtener los documentos de la subcolección filtrados
+    const subQuerySnapshot = await getDocs(q);
+
+    // Verificamos si encontramos algún documento con el correo buscado
+    if (!subQuerySnapshot.empty) {
+      // Si encontramos el correo, devolvemos los datos del usuario
+      let userData = null;
+      subQuerySnapshot.forEach((doc) => {
+        userData = doc.data(); // Tomamos los datos del usuario
+      });
+      return userData; // Devolvemos la información del primer usuario encontrado
+    }
+  }
+
+  // Si no encontramos ningún usuario con ese correo, devolvemos null
+  return null;
 }
+
 
 // Cerrar la sesion del usario
 export const singOut = async () => {
-  localStorage.removeItem('user')
-  return await auth.signOut()
-}
+  localStorage.removeItem("user");
+  await auth.signOut().catch((error) => {
+    return { success: false, message: "Error al cerrar la sesión" };
+  });
+  return { success: true, message: "Gracias por venir" };
+};
 
 // Crear un nuevo usario
-export const CreateUser = async ( user : { email : string, password : string } ) => {
-  try {
-    // Paso 1: Crear el usuario con email y contraseña
-    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
-    const newUser = userCredential.user;
-
-    // Paso 2: Enviar el correo de verificación
-    await sendEmailVerification(newUser);
-    console.log("Correo de verificación enviado a: ", user.email);
-
-    return { success: true, message: "Usuario creado y correo de verificación enviado." };
-  } catch ( error : any ) {
-    console.error("Error al crear el usuario:", error.message);
-    return { success: false, message: error.message };
-  }
-};
-
-// Verificar si el correo del usuario ha sido confirmado
-export const checkEmailVerification = async (user: any) => {
-  try {
-    // Primero, recargamos el usuario para asegurarnos de que la información de la verificación esté actualizada
-    await user.reload();
-    
-    // Accedemos al documento del usuario en Firestore
-    const userDocRef = doc(db, "users", user.uid); // Asumimos que tienes una colección "users" con el ID del usuario como documento
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      
-      // Verificamos si el correo ha sido confirmado
-      if (userData?.emailVerified) {
-        console.log("El correo ha sido verificado.");
-        return { success: true, message: "Correo verificado." };
-      } else {
-        console.log("El correo no ha sido verificado.");
-        return { success: false, message: "Correo no verificado." };
-      }
-    } else {
-      console.log("No se encontró el documento del usuario en la base de datos.");
-      return { success: false, message: "Usuario no encontrado en la base de datos." };
-    }
-  } catch (error:any) {
-    console.error("Error al verificar la confirmación del correo:", error);
-    return { success: false, message: error.message };
-  }
-};
-
-// Actualizar el nombre del usuario
-export const updateUser = ( user : { displayName? : string | null  } ) => {
-  if(auth.currentUser) return updateProfile(auth.currentUser, user)
+export const CreateUser = async ( user : { name: string, email: string, password: string } ) => {
+  return createUserWithEmailAndPassword(auth, user.email, user.password)
 }
 
+// Actualizar el nombre del usuario
+export const updateUser = (user: { displayName?: string | null }) => {
+  if (auth.currentUser) return updateProfile(auth.currentUser, user);
+};
+
 // Guardar la informacion del usuario
-export const setDocument = async ( path : string, data : any) => {
-  data.createdAt = serverTimestamp()
-  return setDoc(doc(db,path), data)
+export const setDocument = async (path: string, data: any) => {
+  data.createdAt = serverTimestamp();
+  return setDoc(doc(db, path), data);
+};
+
+// Obtener la informacion de una collecion
+export const getDocument = async (path: string) => {
+  return (await getDoc(doc(db, path))).data();
+};
+
+// Reestablecer la contraseña mediante un correo
+export const sendtResetEmail = async ( email: string ) => {
+  return await sendPasswordResetEmail(auth, email)
 }
