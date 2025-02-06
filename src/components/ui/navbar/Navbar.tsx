@@ -1,16 +1,33 @@
-'use client'
+"use client";
+import { useUser } from "@/app/hooks/us-user";
 import { comicSansFont, titleFont } from "@/config/font";
+import { singOut } from "@/lib/firebase";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const user = useUser();
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(!!user);
+
+  const cerrarSesion = async () => {
+    await singOut();
+    setIsUserLoggedIn(false);
+  };
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  useEffect(() => {
+    if (!user) {
+      setIsUserLoggedIn(false);
+    } else {
+      setIsUserLoggedIn(true);
+    }
+  }, [user]);
 
   return (
     <nav className="flex items-center justify-between flex-wrap bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-700 pl-2 pr-6 md:px-20 py-2 shadow-lg md:rounded-b-3xl">
@@ -22,7 +39,9 @@ export const Navbar = () => {
           alt="manzana"
           className="w-16 h-16 rounded-full"
         />
-        <h1 className={`${comicSansFont.className} antialiased pl-3 text-xl md:text-2xl`}>
+        <h1
+          className={`${comicSansFont.className} antialiased pl-3 text-xl md:text-2xl`}
+        >
           Pequeño Mordelón
         </h1>
       </div>
@@ -52,9 +71,21 @@ export const Navbar = () => {
           <Link href={""} className="text-white rounded-lg hover:underline">
             Contacto
           </Link>
-          <Link href={"/auth"} className="text-white rounded-lg hover:underline">
-            Iniciar Sesión
-          </Link>
+          {isUserLoggedIn ? (
+            <button
+              className="text-white rounded-lg hover:underline"
+              onClick={cerrarSesion}
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <Link
+              href={"/auth"}
+              className="text-white rounded-lg hover:underline"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
         </div>
       </div>
     </nav>

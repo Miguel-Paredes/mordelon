@@ -45,7 +45,6 @@ export default function SignIn() {
       const singInUser = await singIn(user);
       if (singInUser.success == false)
         return toast.error(singInUser.message, { duration: 5000 });
-      toast(`!Bienvenido¡`, { duration: 5000, icon: "😎" });
     } catch (error: any) {
       toast.error(
         // Mostramos el mensaje de error

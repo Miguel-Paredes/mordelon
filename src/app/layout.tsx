@@ -15,7 +15,7 @@ export default function RootLayout({
   const authRoutes = ["/auth", "/auth/sign-up", "/auth/forgot-password"]
   // Verifica las rutas en las que se encuentra el usuario
   const isInAuthRoutes = authRoutes.includes(pathName)
-  if(user&&isInAuthRoutes) return redirect('/dashboard')
+  if(user&&isInAuthRoutes) return redirect('/')
   return (
     <html lang="en">
       <body>
