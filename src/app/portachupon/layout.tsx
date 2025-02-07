@@ -3,8 +3,8 @@ import "../globals.css";
 import { Footer, Navbar } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Pequeño Mordelón",
-  description: "Una página web diseñada a la venta de productos para bebes",
+  title: "Portachupón",
+  description: "Pagina para la venta de portachupones",
 };
 
 export default function RootLayout({

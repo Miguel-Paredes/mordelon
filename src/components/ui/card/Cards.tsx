@@ -29,7 +29,7 @@ export const Cards = () => {
         "Mantén el chupón limpio y siempre a mano, favoreciendo la comodidad de tu bebé.",
       precio: "$15.00",
       imagen: "/portachupón.png",
-      url: 'portachupón'
+      url: 'portachupon'
     },
     {
       id: 3,
@@ -42,11 +42,11 @@ export const Cards = () => {
     },
   ];
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-10">
+    <div className="flex flex-wrap w-full gap-8 justify-center pt-4">
       {productos.map((producto) => (
         <div
           key={producto.id}
-          className="bg-white rounded-lg shadow-md overflow-hidden"
+          className="bg-white md:max-w-md lg:max-w-sm rounded-t-3xl overflow-hidden shadow-lg"
         >
           <Image
             src={producto.imagen}
