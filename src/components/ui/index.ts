@@ -1,5 +1,4 @@
 export * from './button'
-export * from './card-products/card'
 export * from './card/Cards'
 export * from './footer/Footer'
 export * from './input'

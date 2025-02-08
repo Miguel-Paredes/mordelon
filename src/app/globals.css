@@ -70,3 +70,14 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+.whatsapp-icon {
+  color: #25d366; 
+  transition: transform 0.3s, color 0.3s; 
+}
+
+.whatsapp-icon:hover {
+  transform: rotate(360deg); 
+  color: #128c7e; 
+}
