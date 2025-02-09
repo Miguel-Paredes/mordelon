@@ -1,4 +1,4 @@
-import { mordedores } from "@/seed/mordedores.seed";
+import { mordedores } from "@/seed";
 import { CardProducts } from "./card-products/card";
 
 export default function Portamordedor() {
@@ -7,7 +7,7 @@ export default function Portamordedor() {
       <h2 className="text-3xl font-semibold text-center mb-10">
         Portamordedor
       </h2>
-      <CardProducts productos={mordedores}/>
+      <CardProducts productos={mordedores} />
     </main>
   );
 }

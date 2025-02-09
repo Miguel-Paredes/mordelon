@@ -166,8 +166,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
             </h2>
             <p>
               {isInCart
-                ? `¿Deseas actualizar el Collar ${selectedProduct.nombre.toLowerCase()} en el carrito?`
-                : `¿Deseas agregar el Collar  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
+                ? `¿Deseas actualizar el collar ${selectedProduct.nombre.toLowerCase()} en el carrito?`
+                : `¿Deseas agregar el collar  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
             </p>
 
             {/* Selector de cantidad */}

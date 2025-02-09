@@ -3,14 +3,14 @@ import { FaWhatsapp } from "react-icons/fa";
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-800 mt-10 text-white py-6 grid grid-cols-2">
-      <div className="container mx-auto px-4 text-center">
+    <footer className="bg-gray-800 mt-10 text-white py-6 grid grid-cols-1 md:grid-cols-2">
+      <div className="container mx-auto px-4 text-center order-2 md:order-1">
         <p>
           &copy; {new Date().getFullYear()} Pequeño Mordelón. Todos los derechos
           reservados.
         </p>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center order-1 md:order-2">
         <div className="mx-4">
           <Link
             href={"https://wa.me/0960667241"}
