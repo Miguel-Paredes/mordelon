@@ -55,22 +55,44 @@ export const Navbar = () => {
           isOpen ? "flex" : "hidden"
         } absolute top-20 shadow-sm lg:shadow-none left-0 w-full opacity-100 rounded-b-2xl lg:rounded-none bg-cyan-700 lg:bg-transparent lg:static lg:flex lg:items-center lg:w-auto z-50`}
       >
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-6 w-full p-4 lg:p-0">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 w-full p-4 lg:p-0">
           <Link href="/" className="text-white rounded-lg hover:underline">
             Inicio
           </Link>
-          <Link href={"/collares-de-lactancia"} className="text-white rounded-lg hover:underline">
+          <Link
+            href={"/collares-de-lactancia"}
+            className="text-white rounded-lg hover:underline"
+          >
             Collares
           </Link>
-          <Link href={"/portachupon"} className="text-white rounded-lg hover:underline">
+          <Link
+            href={"/portachupon"}
+            className="text-white rounded-lg hover:underline"
+          >
             Portachupón
           </Link>
-          <Link href={"/portamordedor"} className="text-white rounded-lg hover:underline">
+          <Link
+            href={"/portamordedor"}
+            className="text-white rounded-lg hover:underline"
+          >
             Portamordedor
           </Link>
-          <Link href={"/contacto"} className="text-white rounded-lg hover:underline">
-            Contacto
-          </Link>
+          {isUserLoggedIn && (
+            <Link
+              href={"/carrito"}
+              className="text-white rounded-lg hover:underline"
+            >
+              Carrito
+            </Link>
+          )}
+          {isUserLoggedIn && (
+            <Link
+              href={"/pedidos"}
+              className="text-white rounded-lg hover:underline"
+            >
+              Pedidos
+            </Link>
+          )}
           {isUserLoggedIn ? (
             <button
               className="text-white rounded-lg hover:underline"

@@ -122,6 +122,14 @@ export default function SignIn() {
           Registrarse
         </Link>
       </p>
+      <p className="text-center text-sm text-muted-foreground">
+        <Link
+          href={"/"}
+          className="underline underline-offset-4 hover:text-primary"
+        >
+          ¿Quieres volver a la página principal?
+        </Link>
+      </p>
     </>
   );
 }

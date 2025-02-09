@@ -1,4 +1,5 @@
-import { Cards } from "@/components/ui";
+import { mordedores } from "@/seed/mordedores.seed";
+import { CardProducts } from "./card-products/card";
 
 export default function Portamordedor() {
   return (
@@ -6,7 +7,7 @@ export default function Portamordedor() {
       <h2 className="text-3xl font-semibold text-center mb-10">
         Portamordedor
       </h2>
-      <Cards />
+      <CardProducts productos={mordedores}/>
     </main>
   );
 }

@@ -34,6 +34,8 @@ export const useUser = () => {
                 if(userInLocal) return setUser(userInLocal)
                 else gerUserFromBD(authUser.uid)
             }else{
+                // En caso de cerrar sesion o que no este iniciado, declaramos undefinedre
+                setUser(undefined)
                 if(isInProtectedRoutes) return router.push('/auth')
             }
         })

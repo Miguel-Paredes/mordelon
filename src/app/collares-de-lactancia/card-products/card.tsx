@@ -4,6 +4,7 @@ import { Button } from "@/components/ui";
 import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
 import { AiOutlineShoppingCart, AiOutlineDelete } from "react-icons/ai";
+import toast from "react-hot-toast";
 
 interface CardProductsProps {
   productos: Productos[];
@@ -59,6 +60,15 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       // Obtener el carrito actual del localStorage
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
+      // Validar que la inicial del bebé no esté vacía si el producto lo requiere
+      if (
+        selectedProduct.nombre.includes("inicial") &&
+        (!babyInitial || babyInitial.trim() === "")
+      ) {
+        toast("Debes ingresar una inicial para el bebé.");
+        return;
+      }
+
       // Crear un objeto con la información del producto, cantidad e inicial del bebé
       const productToUpdate = {
         ...selectedProduct,
@@ -77,11 +87,9 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
 
       // Guardar el carrito actualizado en el localStorage
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-      alert(
-        isInCart
-          ? "Producto actualizado en el carrito!"
-          : "Producto añadido al carrito!"
-      );
+      isInCart
+        ? toast.success("Producto actualizado en el carrito!")
+        : toast.success("Producto añadido al carrito!");
       closeModal();
     }
   };
@@ -99,7 +107,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
 
       // Guardar el carrito actualizado en el localStorage
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-      alert("Producto eliminado del carrito!");
+      toast.success("Producto eliminado del carrito!");
       closeModal();
     }
   };
@@ -158,8 +166,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
             </h2>
             <p>
               {isInCart
-                ? `¿Deseas actualizar el collar "${selectedProduct.nombre}" en el carrito?`
-                : `¿Deseas agregar el collar  "${selectedProduct.nombre}" al carrito?`}
+                ? `¿Deseas actualizar el Collar ${selectedProduct.nombre.toLowerCase()} en el carrito?`
+                : `¿Deseas agregar el Collar  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
             </p>
 
             {/* Selector de cantidad */}

@@ -78,7 +78,9 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
 
       // Guardar el carrito actualizado en el localStorage
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-      isInCart ? toast.success("Producto actualizado en el carrito!") : toast.success("Producto añadido al carrito!")
+      isInCart
+        ? toast.success("Producto actualizado en el carrito!")
+        : toast.success("Producto añadido al carrito!");
       closeModal();
     }
   };
@@ -173,22 +175,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               />
             </div>
-
-            {/* Cuadro de texto para la inicial del bebé */}
-            {selectedProduct.nombre.includes("inicial") && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Inicial del bebé:
-                </label>
-                <input
-                  type="text"
-                  maxLength={1}
-                  value={babyInitial}
-                  onChange={(e) => setBabyInitial(e.target.value.toUpperCase())}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-                />
-              </div>
-            )}
 
             {/* Botones de acción */}
             <div className="flex justify-end mt-4 space-x-2">

@@ -4,16 +4,16 @@ export const collares: Productos[] = [
   {
     nombre: "Sencillo",
     precio: 10.00,
-    imagen: "/collares-sencillo.png",
+    imagen: "/collares/collares-sencillo.png",
   },
   {
     nombre: "Con figura decorativo",
     precio: 15.00,
-    imagen: "/collar-figura-decorativa.png",
+    imagen: "/collares/collar-figura-decorativa.png",
   },
   {
     nombre: "Con tu inicial y la de tu bebé",
     precio: 20.00,
-    imagen: "/collares-inicial.png",
+    imagen: "/collares/collares-inicial.png",
   },
 ];
