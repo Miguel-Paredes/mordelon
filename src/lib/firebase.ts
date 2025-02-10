@@ -98,3 +98,13 @@ export const addDocument = ( path: string, data : any ) => {
   data.createdAt = serverTimestamp()
   return addDoc(collection(db,path), data)
 }
+
+// Mostrar toda la informacion de la coleccion
+export const getColection = async ( colecctionName : string, querryArray?: any[] ) => {
+  // * Accedemos a una coleccion en especifico
+  const ref = collection(db, colecctionName)
+  // * Obtenemos toda la informacion del array
+  const q = querryArray ? query(ref, ...querryArray) : query(ref)
+    // * Mostramos la informacion empezando por el id y luego el resto
+  return ( await getDocs(q)).docs.map( (doc) => ( { id: doc.id, ...doc.data() } ) )
+}

@@ -19,8 +19,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   );
   // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
-  // Estado para la inicial del bebé
-  const [babyInitial, setBabyInitial] = useState("");
   // Estado para verificar si el producto ya está en el carrito
   const [isInCart, setIsInCart] = useState(false);
 
@@ -37,11 +35,9 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
     if (existingProduct) {
       setIsInCart(true); // El producto ya está en el carrito
       setQuantity(existingProduct.quantity); // Cargar la cantidad previamente ingresada
-      setBabyInitial(existingProduct.babyInitial || ""); // Cargar la inicial del bebé si existe
     } else {
       setIsInCart(false); // El producto no está en el carrito
       setQuantity(1); // Reiniciar la cantidad
-      setBabyInitial(""); // Reiniciar la inicial del bebé
     }
 
     setIsModalOpen(true);
@@ -64,9 +60,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       const productToUpdate = {
         ...selectedProduct,
         quantity,
-        babyInitial: selectedProduct.nombre.includes("inicial")
-          ? babyInitial
-          : null,
       };
 
       // Actualizar el carrito

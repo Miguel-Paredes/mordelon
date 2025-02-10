@@ -5,6 +5,7 @@ import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
 import { AiOutlineShoppingCart, AiOutlineDelete } from "react-icons/ai";
 import toast from "react-hot-toast";
+import { Portachupones } from "@/seed";
 
 interface CardProductsProps {
   productos: Productos[];
@@ -14,13 +15,11 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Estado para almacenar el producto seleccionado
-  const [selectedProduct, setSelectedProduct] = useState<Productos | null>(
-    null
-  );
+  const [selectedProduct, setSelectedProduct] = useState<Productos | null>(null);
   // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
-  // Estado para la inicial del bebé
-  const [babyInitial, setBabyInitial] = useState("");
+  // Estado para las imágenes seleccionadas
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   // Estado para verificar si el producto ya está en el carrito
   const [isInCart, setIsInCart] = useState(false);
 
@@ -37,11 +36,11 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
     if (existingProduct) {
       setIsInCart(true); // El producto ya está en el carrito
       setQuantity(existingProduct.quantity); // Cargar la cantidad previamente ingresada
-      setBabyInitial(existingProduct.babyInitial || ""); // Cargar la inicial del bebé si existe
+      setSelectedImages(existingProduct.selectedImages || []); // Cargar las imágenes seleccionadas
     } else {
       setIsInCart(false); // El producto no está en el carrito
       setQuantity(1); // Reiniciar la cantidad
-      setBabyInitial(""); // Reiniciar la inicial del bebé
+      setSelectedImages([]); // Reiniciar las imágenes seleccionadas
     }
 
     setIsModalOpen(true);
@@ -57,6 +56,22 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Función para agregar o actualizar el producto en el localStorage
   const updateLocalStorage = () => {
     if (selectedProduct) {
+      // Validar la selección de imágenes solo para "Con clip de varios diseños a elección"
+      if (
+        selectedProduct.nombre.includes("diseños a elección") &&
+        selectedImages.length === 0
+      ) {
+        toast("Debes seleccionar al menos una imagen.");
+        return;
+      }
+      if (
+        selectedProduct.nombre.includes("diseños a elección") &&
+        selectedImages.length > 1 &&
+        selectedImages.length < quantity
+      ) {
+        toast(`Debes seleccionar ${quantity} imágenes.`);
+        return;
+      }
       // Obtener el carrito actual del localStorage
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
@@ -64,9 +79,10 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       const productToUpdate = {
         ...selectedProduct,
         quantity,
-        babyInitial: selectedProduct.nombre.includes("inicial")
-          ? babyInitial
-          : null,
+        selectedImages:
+          selectedProduct.nombre.includes("diseños a elección") && selectedImages.length === 1
+            ? Array(quantity).fill(selectedImages[0])
+            : selectedImages,
       };
 
       // Actualizar el carrito
@@ -100,6 +116,15 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       toast.success("Producto eliminado del carrito!");
       closeModal();
+    }
+  };
+
+  // Función para manejar la selección de imágenes
+  const handleImageSelect = (image: string) => {
+    if (selectedImages.includes(image)) {
+      setSelectedImages(selectedImages.filter((img) => img !== image)); // Deseleccionar
+    } else {
+      setSelectedImages([...selectedImages, image]); // Seleccionar
     }
   };
 
@@ -176,19 +201,38 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
               />
             </div>
 
-            {/* Cuadro de texto para la inicial del bebé */}
-            {selectedProduct.nombre.includes("inicial") && (
+                        {/* Selección de imágenes */}
+                        {selectedProduct.nombre.includes("diseños a elección") && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Inicial del bebé:
+                  Selecciona hasta {quantity} imágenes:
                 </label>
-                <input
-                  type="text"
-                  maxLength={1}
-                  value={babyInitial}
-                  onChange={(e) => setBabyInitial(e.target.value.toUpperCase())}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
-                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {Portachupones.map((clip, index) => (
+                    <div
+                      key={index}
+                      className={`relative w-20 h-20 cursor-pointer border-2 ${
+                        selectedImages.includes(clip.imagen)
+                          ? "border-blue-500"
+                          : "border-gray-300"
+                      } rounded-md overflow-hidden`}
+                      onClick={() => handleImageSelect(clip.imagen)}
+                    >
+                      <Image
+                        src={clip.imagen}
+                        alt={`Clip ${index + 1}`}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {selectedImages.length > 0 && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    Imágenes seleccionadas: {selectedImages.length}
+                  </p>
+                )}
               </div>
             )}
 

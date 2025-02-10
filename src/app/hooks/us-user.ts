@@ -13,7 +13,7 @@ export const useUser = () => {
     const pathName = usePathname();
     const router = useRouter()
     // Definimos las rutas a las que no se deben de acceder si no esta logueado
-    const protectedRoutes = ["/pedidos", "/dashboard"];
+    const protectedRoutes = ["/pedidos"];
     // Verifica las rutas en las que se encuentra el usuario
     const isInProtectedRoutes = protectedRoutes.includes(pathName);
 

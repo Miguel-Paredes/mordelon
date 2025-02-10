@@ -11,6 +11,7 @@ import { serverTimestamp } from "firebase/firestore";
 
 interface CartItem {
   nombre: string;
+  cantidad: number;
   precio: number;
   imagen: string;
   quantity: number;
@@ -26,6 +27,7 @@ export default function CartPage() {
   const formSchema = z.object({
     name: z.array(z.string()),
     image: z.array(z.string()),
+    cantidad: z.array(z.number()),
     price: z.array(z.number()),
     total: z.number(),
   });
@@ -73,6 +75,7 @@ export default function CartPage() {
       const pedidos = {
         name: cartItems.map((item) => item.nombre),
         image: cartItems.map((item) => item.imagen),
+        cantidad: cartItems.map((item)=> item.cantidad),
         price: cartItems.map((item) => item.precio),
         total: calculateTotal(),
       };
@@ -81,12 +84,15 @@ export default function CartPage() {
       const validatedData = formSchema.parse(pedidos);
 
       // Crear el pedido en Firebase
-      const docRef = await addDocument(`pedidos/${user.uid}/pedido`, {
+      await addDocument(`users/${user.uid}/pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
       });
 
-      const pedidoUID = docRef.id;
+      await addDocument(`pedidos`, {
+        ...validatedData,
+        createdAt: serverTimestamp(),
+      });
 
       toast.success("Pedido realizado exitosamente");
 
