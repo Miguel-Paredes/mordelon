@@ -47,7 +47,6 @@ export default function SignUp() {
 
   // todo: Envio de datos a la base de datos
   const onSubmit = async (user: z.infer<typeof formSchema>) => {
-    console.log(user);
     setisLoading(true);
     let cuenta = true;
     try {

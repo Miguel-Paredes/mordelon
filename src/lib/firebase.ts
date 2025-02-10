@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
@@ -90,4 +91,10 @@ export const getDocument = async (path: string) => {
 // Reestablecer la contraseña mediante un correo
 export const sendtResetEmail = async ( email: string ) => {
   return await sendPasswordResetEmail(auth, email)
+}
+
+// Crear el pedido
+export const addDocument = ( path: string, data : any ) => {
+  data.createdAt = serverTimestamp()
+  return addDoc(collection(db,path), data)
 }

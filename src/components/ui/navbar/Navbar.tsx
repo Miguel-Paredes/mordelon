@@ -77,14 +77,12 @@ export const Navbar = () => {
           >
             Portamordedor
           </Link>
-          {isUserLoggedIn && (
-            <Link
-              href={"/carrito"}
-              className="text-white rounded-lg hover:underline"
-            >
-              Carrito
-            </Link>
-          )}
+          <Link
+            href={"/carrito"}
+            className="text-white rounded-lg hover:underline"
+          >
+            Carrito
+          </Link>
           {isUserLoggedIn && (
             <Link
               href={"/pedidos"}
