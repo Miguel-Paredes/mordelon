@@ -75,7 +75,7 @@ export default function CartPage() {
       const pedidos = {
         name: cartItems.map((item) => item.nombre),
         image: cartItems.map((item) => item.imagen),
-        cantidad: cartItems.map((item)=> item.cantidad),
+        cantidad: cartItems.map((item)=> item.quantity),
         price: cartItems.map((item) => item.precio),
         total: calculateTotal(),
       };
@@ -98,6 +98,7 @@ export default function CartPage() {
 
       // Limpiar el carrito del localStorage
       localStorage.removeItem("cart");
+      localStorage.removeItem("pedidos");
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
     } catch (error: any) {

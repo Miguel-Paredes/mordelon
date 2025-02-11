@@ -24,10 +24,6 @@ export default function Pedidos() {
   const user = useUser();
   const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedPedido, setSelectedPedido] = useState<Pedidos_Usarios | null>(
-    null
-  );
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -37,7 +33,7 @@ export default function Pedidos() {
         if (storedPedidos) {
           const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
           setPedidos(parsedPedidos);
-          console.log(storedPedidos)
+          console.log(storedPedidos);
           setLoading(false);
           return;
         }
@@ -52,7 +48,6 @@ export default function Pedidos() {
         localStorage.setItem("pedidos", JSON.stringify(pedidosData));
         setPedidos(pedidosData as Pedidos_Usarios[]);
       } catch (error: any) {
-        setError(error.message || "Error al cargar los pedidos");
         toast.error(error.message || "Error al cargar los pedidos", {
           duration: 5000,
         });
@@ -68,42 +63,56 @@ export default function Pedidos() {
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold text-center mb-8">Pedidos</h1>
       {pedidos.length > 0 ? (
-        <div className={`${pedidos.length < 6 ? "h-80" : "h-auto"}`}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>N°</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            {pedidos.map((pedido, index) => (
-              <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>${pedido.total.toFixed(2)}</TableCell>
-                <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline">Ver pedido</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Detalles del Pedido</DialogTitle>
-                      </DialogHeader>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Subtotal</TableHead>
-                            <TableHead>Imagen</TableHead>
-                            <TableHead>Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <tbody>
+        <div className="flex justify-center">
+          <div className={`${pedidos.length < 10 ? "h-screen" : "h-auto"} ${pedidos.length < 6 ? "md:h-80" : "md:h-auto"} w-full md:w-1/2`}>
+            {/* 7 */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>N°</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              {pedidos.map((pedido, index) => (
+                <TableRow key={index}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>${pedido.total.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline">Ver pedido</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <div className="flex justify-center">
+                            <DialogTitle>Detalles del Pedido</DialogTitle>
+                          </div>
+                          <div className="flex justify-end">
+                            <p className="p-2 border-2 border-solid border-gray-200 rounded-lg w-max">
+                              Total: ${pedido.total.toFixed(2)}
+                            </p>
+                          </div>
+                        </DialogHeader>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nombre</TableHead>
+                              <TableHead>Cantidad</TableHead>
+                              <TableHead>Precio Unitario</TableHead>
+                              <TableHead>Imagen</TableHead>
+                              <TableHead>SubTotal</TableHead>
+                            </TableRow>
+                          </TableHeader>
                           {pedido.name.map((nombre, idx) => (
                             <TableRow key={idx}>
                               <TableCell>{nombre}</TableCell>
-                              <TableCell>${pedido.price[idx].toFixed(2)}</TableCell>
+                              <TableCell className="text-center">
+                                {pedido.cantidad[idx]}
+                              </TableCell>
+                              <TableCell>
+                                ${pedido.price[idx].toFixed(2)}
+                              </TableCell>
                               <TableCell>
                                 <Image
                                   src={pedido.image[idx]}
@@ -113,20 +122,25 @@ export default function Pedidos() {
                                   className="rounded-md"
                                 />
                               </TableCell>
-                              <TableCell>${pedido.price[idx].toFixed(2)}</TableCell>
+                              <TableCell>
+                                $
+                                {(
+                                  pedido.price[idx] * pedido.cantidad[idx]
+                                ).toFixed(2)}
+                              </TableCell>
                             </TableRow>
                           ))}
-                        </tbody>
-                      </Table>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
-              </TableRow>
-            ))}
-          </Table>
+                        </Table>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </Table>
+          </div>
         </div>
       ) : (
-        <div className="h-80 flex justify-center items-center">
+        <div className="h-screen md:h-80 flex justify-center items-center">
           <p className="text-center text-gray-600">
             No existen pedidos previos.
           </p>

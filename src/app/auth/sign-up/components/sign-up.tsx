@@ -11,10 +11,13 @@ import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { User } from "@/interfaces/user.interfaces";
 import { redirect } from "next/navigation";
+import { countries } from "@/seed";
 
 export default function SignUp() {
-  const [isLoading, setisLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createCount, setCreateCount] = useState<boolean>(false);
+  const [selectedCountryCode, setSelectedCountryCode] =
+    useState<string>("+593"); // País predeterminado
 
   // ! Información necesaria para el registro de credenciales
   const formSchema = z.object({
@@ -22,13 +25,17 @@ export default function SignUp() {
     name: z.string().min(4, "El nombre no puede ser menor a 4 caracteres"),
     email: z
       .string()
-      .email("El formato del correo no es valido. Ejemplo: user@gmail.com")
+      .email("El formato del correo no es válido. Ejemplo: user@gmail.com")
       .min(1, {
         message: "Este campo es requerido",
       }),
     password: z.string().min(6, {
       message: "La contraseña debe tener al menos 6 caracteres",
     }),
+    phone: z
+      .string()
+      .regex(/^\d+$/, "El número de teléfono no es válido. Solo números.")
+      .min(7, "El número de teléfono debe tener al menos 7 dígitos"),
   });
 
   // * Validación de datos
@@ -39,15 +46,15 @@ export default function SignUp() {
       name: "",
       email: "",
       password: "",
+      phone: "",
     },
   });
-
   const { register, handleSubmit, formState } = form;
   const { errors } = formState;
 
-  // todo: Envio de datos a la base de datos
+  // todo: Envío de datos a la base de datos
   const onSubmit = async (user: z.infer<typeof formSchema>) => {
-    setisLoading(true);
+    setIsLoading(true);
     let cuenta = true;
     try {
       setCreateCount(true);
@@ -56,7 +63,7 @@ export default function SignUp() {
       user.uid = usercreate.user.uid;
       await createUserInDB(user as User);
       toast.success(`Bienvenido ${user.name}`, { duration: 5000 });
-      cuenta = false
+      cuenta = false;
     } catch (error: any) {
       const errorCreateUser = error.code;
       if (errorCreateUser === "auth/email-already-in-use") {
@@ -65,7 +72,7 @@ export default function SignUp() {
         return toast.error("El correo no es válido", { duration: 5000 });
       }
     } finally {
-      setisLoading(false);
+      setIsLoading(false);
       setTimeout(() => {
         setCreateCount(false);
       }, 5000);
@@ -75,14 +82,14 @@ export default function SignUp() {
 
   const createUserInDB = async (user: User) => {
     const path = `users/${user.uid}`;
-    setisLoading(true);
+    setIsLoading(true);
     try {
       delete user.password;
       await setDocument(path, user);
     } catch (error: any) {
       toast.error(error.message, { duration: 5000 });
     } finally {
-      setisLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -112,6 +119,37 @@ export default function SignUp() {
               {errors.name?.message}
             </span>
           </div>
+
+          {/* País y Celular */}
+          <div className="mb-3">
+            <Label htmlFor="phone">Celular</Label>
+            <div className="flex items-center space-x-2">
+              <select
+                value={selectedCountryCode}
+                onChange={(e) => setSelectedCountryCode(e.target.value)}
+                className="border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:border-primary"
+              >
+                {countries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name} ({country.code})
+                  </option>
+                ))}
+              </select>
+              <Input
+                {...register("phone")}
+                id="phone"
+                placeholder="987654321"
+                type="tel"
+                maxLength={9}
+              />
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <span className="text-red-500 w-max rounded-lg pt-1">
+              {errors.phone?.message}
+            </span>
+          </div>
+
           {/* Correo */}
           <div className="mb-3">
             <Label htmlFor="email">Email</Label>
