@@ -13,17 +13,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui";
-import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
 import { getColection } from "@/lib/firebase";
 import { orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useUser } from "../hooks/us-user";
 import Image from "next/image";
+import { Pedidos_Administrador } from "@/interfaces/administrador.interface";
+import { FaWhatsapp } from "react-icons/fa";
+import Link from "next/link";
 
 export default function PedidosCellPhone() {
   const user = useUser();
-  const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
+  const [pedidos, setPedidos] = useState<Pedidos_Administrador[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,14 +44,13 @@ export default function PedidosCellPhone() {
         }
 
         // Si no están en localStorage, obtenerlos de Firebase
-        const id_usuario = user?.uid; 
         const path = `pedidos`;
         const query = [orderBy("createdAt", "desc")];
         const pedidosData = await getColection(path, query);
 
         // Guardar los datos en localStorage
         localStorage.setItem("admin", JSON.stringify(pedidosData));
-        setPedidos(pedidosData as Pedidos_Usarios[]);
+        setPedidos(pedidosData as Pedidos_Administrador[]);
       } catch (error: any) {
         toast.error(error.message || "Error al cargar los pedidos", {
           duration: 5000,
@@ -126,64 +127,74 @@ export default function PedidosCellPhone() {
                     </TableCell>
                     <TableCell>${pedido.total.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <div className="flex justify-center">
+                      <div className="flex justify-center space-x-2">
+                        <Link href={`https://wa.me/${pedido.phone}`}>
+                          <Button className="bg-green-500">
+                            <FaWhatsapp size={30} />
+                          </Button>
+                        </Link>
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <Button variant="outline">Ver pedido</Button>
-                          </div>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <div className="flex justify-center">
-                              <DialogTitle>Detalles del Pedido</DialogTitle>
-                            </div>
-                            <div className="flex justify-end">
-                              <p className="p-2 my-2 border-2 border-solid border-gray-200 rounded-lg w-max">
-                                Total: ${pedido.total.toFixed(2)}
-                              </p>
-                            </div>
-                          </DialogHeader>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Nombre</TableHead>
-                                <TableHead>Cantidad</TableHead>
-                                <TableHead>Precio Unitario</TableHead>
-                                <TableHead>Imagen</TableHead>
-                                <TableHead>SubTotal</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {pedido.name.map((nombre, idx) => (
-                                <TableRow key={idx}>
-                                  <TableCell>{nombre}</TableCell>
-                                  <TableCell className="text-center">
-                                    {pedido.cantidad[idx]}
-                                  </TableCell>
-                                  <TableCell>
-                                    ${pedido.price[idx].toFixed(2)}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Image
-                                      src={pedido.image[idx]}
-                                      alt={nombre}
-                                      width={50}
-                                      height={50}
-                                      className="rounded-md"
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    $
-                                    {(
-                                      pedido.price[idx] * pedido.cantidad[idx]
-                                    ).toFixed(2)}
-                                  </TableCell>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <div className="flex justify-center">
+                                <DialogTitle>Detalles del Pedido</DialogTitle>
+                              </div>
+                              <div className="flex justify-end">
+                                <p className="p-2 my-2 border-2 border-solid border-gray-200 rounded-lg w-max">
+                                  Total: ${pedido.total.toFixed(2)}
+                                </p>
+                              </div>
+                            </DialogHeader>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nombre</TableHead>
+                                  <TableHead>Cantidad</TableHead>
+                                  <TableHead>Precio Unitario</TableHead>
+                                  <TableHead>Imagen</TableHead>
+                                  <TableHead>SubTotal</TableHead>
                                 </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </DialogContent>
-                      </Dialog>
+                              </TableHeader>
+                              <TableBody>
+                                {pedido.name.map((nombre, idx) => (
+                                  <TableRow key={idx}>
+                                    <TableCell>
+                                      {nombre}
+                                      <span>
+                                        <b>{" " + pedido.babyInitial[idx]}</b>
+                                      </span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      {pedido.cantidad[idx]}
+                                    </TableCell>
+                                    <TableCell>
+                                      ${pedido.price[idx].toFixed(2)}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Image
+                                        src={pedido.image[idx]}
+                                        alt={nombre}
+                                        width={50}
+                                        height={50}
+                                        className="rounded-md"
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      $
+                                      {(
+                                        pedido.price[idx] * pedido.cantidad[idx]
+                                      ).toFixed(2)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

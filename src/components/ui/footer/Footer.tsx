@@ -13,7 +13,7 @@ export const Footer = () => {
       <div className="flex justify-center order-1 md:order-2">
         <div className="mx-4">
           <Link
-            href={"https://wa.me/0960667241"}
+            href={"https://wa.me/+593960667241"}
             className="flex justify-center hover:underline"
           >
             <FaWhatsapp size={25} className="whatsapp-icon" />

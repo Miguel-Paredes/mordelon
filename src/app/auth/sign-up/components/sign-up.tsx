@@ -54,6 +54,7 @@ export default function SignUp() {
 
   // todo: Envío de datos a la base de datos
   const onSubmit = async (user: z.infer<typeof formSchema>) => {
+    user.phone = `${selectedCountryCode + user.phone}`
     setIsLoading(true);
     let cuenta = true;
     try {

@@ -16,10 +16,18 @@ interface CartItem {
   imagen: string;
   quantity: number;
   babyInitial?: string | null;
+  phone: string;
+  nombre_bebe: string;
+  direccion: string;
 }
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para controlar el modal
+  const [formData, setFormData] = useState<{ nombre_bebe: string; direccion: string }>({
+    nombre_bebe: "",
+    direccion: "",
+  });
   const user = useUser();
   const router = Router;
 
@@ -30,6 +38,10 @@ export default function CartPage() {
     cantidad: z.array(z.number()),
     price: z.array(z.number()),
     total: z.number(),
+    phone: z.string(),
+    babyInitial: z.array(z.string()),
+    nombre_bebe: z.string().min(3, "El nombre del bebé es requerido"),
+    direccion: z.string().min(10, "La dirección es requerida"),
   });
 
   // Estado para almacenar los productos del carrito
@@ -69,32 +81,31 @@ export default function CartPage() {
     }
 
     setIsLoading(true);
-
     try {
-      // Mapear los datos del carrito al formato requerido por el formulario
-      const pedidos = {
+      // Validar los datos del formulario
+      const validatedData = formSchema.parse({
         name: cartItems.map((item) => item.nombre),
         image: cartItems.map((item) => item.imagen),
         cantidad: cartItems.map((item) => item.quantity),
         price: cartItems.map((item) => item.precio),
+        babyInitial: cartItems.map((item) => item.babyInitial || ""),
         total: calculateTotal(),
-      };
-
-      // Validar los datos del formulario
-      const validatedData = formSchema.parse(pedidos);
-
+        phone: user.phone,
+        nombre_bebe: formData.nombre_bebe,
+        direccion: formData.direccion,
+      });
       // Crear el pedido en Firebase
       await addDocument(`users/${user.uid}/pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
       });
-
       await addDocument(`pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
+        cliente: user.uid
       });
 
-      toast.success("Pedido realizado exitosamente");
+      toast.success("Pedido realizado exitosamente", { duration : 5000});
 
       // Limpiar el carrito del localStorage
       localStorage.removeItem("cart");
@@ -102,6 +113,7 @@ export default function CartPage() {
       localStorage.removeItem("admin");
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
+      setIsModalOpen(false); // Cerrar el modal después de enviar
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error al realizar el pedido.", {
         duration: 5000,
@@ -113,9 +125,7 @@ export default function CartPage() {
   return (
     <>
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          Carrito de Compras
-        </h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Carrito de Compras</h1>
 
         {/* Mostrar mensaje si el carrito está vacío */}
         {cartItems.length === 0 ? (
@@ -172,11 +182,11 @@ export default function CartPage() {
               </div>
             ))}
 
-            {/* Botón para realizar el pedido */}
+            {/* Botón para abrir el modal */}
             <div className="mx-2 flex justify-end">
               <Button
                 className="bg-[#6edad2] text-[#09282a] hover:bg-[#3dbdb8]"
-                onClick={onSubmit} // Llamamos directamente a onSubmit
+                onClick={() => setIsModalOpen(true)} // Abrir el modal
               >
                 {isLoading ? "Procesando..." : "Realizar Pedido"}
               </Button>
@@ -184,6 +194,64 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Datos del Pedido</h2>
+
+            {/* Formulario dentro del modal */}
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Nombre del Bebé
+                </label>
+                <input
+                  type="text"
+                  value={formData.nombre_bebe}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nombre_bebe: e.target.value.toUpperCase() })
+                  }
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Juan"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Dirección
+                </label>
+                <input
+                  type="text"
+                  value={formData.direccion}
+                  onChange={(e) =>
+                    setFormData({ ...formData, direccion: e.target.value.toUpperCase() })
+                  }
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Av. Pedro Vicente Maldonado S11-122, Quito 170111"
+                />
+              </div>
+
+              {/* Botones del modal */}
+              <div className="flex justify-end space-x-2">
+                <Button
+                  className="bg-gray-300 text-gray-700 hover:bg-gray-400"
+                  onClick={() => setIsModalOpen(false)} // Cerrar el modal
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  className="bg-[#6edad2] text-[#09282a] hover:bg-[#3dbdb8]"
+                  onClick={onSubmit} // Enviar el formulario
+                >
+                  Confirmar Pedido
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
