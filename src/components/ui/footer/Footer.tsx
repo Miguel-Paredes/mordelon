@@ -3,7 +3,7 @@ import { FaWhatsapp } from "react-icons/fa";
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-800 mt-10 text-white py-6 grid grid-cols-1 md:grid-cols-2">
+    <footer className="bg-gray-800 text-white py-6 grid grid-cols-1 md:grid-cols-2">
       <div className="container mx-auto px-4 text-center order-2 md:order-1">
         <p>
           &copy; {new Date().getFullYear()} Pequeño Mordelón. Todos los derechos

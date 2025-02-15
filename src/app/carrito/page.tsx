@@ -75,7 +75,7 @@ export default function CartPage() {
       const pedidos = {
         name: cartItems.map((item) => item.nombre),
         image: cartItems.map((item) => item.imagen),
-        cantidad: cartItems.map((item)=> item.quantity),
+        cantidad: cartItems.map((item) => item.quantity),
         price: cartItems.map((item) => item.precio),
         total: calculateTotal(),
       };
@@ -99,6 +99,7 @@ export default function CartPage() {
       // Limpiar el carrito del localStorage
       localStorage.removeItem("cart");
       localStorage.removeItem("pedidos");
+      localStorage.removeItem("admin");
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
     } catch (error: any) {
@@ -118,11 +119,11 @@ export default function CartPage() {
 
         {/* Mostrar mensaje si el carrito está vacío */}
         {cartItems.length === 0 ? (
-          <div className="h-80 flex justify-center items-center">
+          <div className="flex justify-center items-center">
             <p className="text-center text-gray-600">El carrito está vacío.</p>
           </div>
         ) : (
-          <div className={`${cartItems.length < 2 ? "h-80" : "h-auto"}`}>
+          <div>
             {/* Mostrar el total del carrito */}
             <div className="flex justify-end mt-4 mb-2">
               <p className="text-xl font-bold text-gray-800">

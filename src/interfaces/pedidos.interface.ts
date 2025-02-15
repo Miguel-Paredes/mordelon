@@ -5,4 +5,8 @@ export interface Pedidos_Usarios{
     cantidad: number[],
     price: number[],
     total: number,
+    createdAt: {
+        seconds: number,
+        nanoseconds: number
+    },
 }

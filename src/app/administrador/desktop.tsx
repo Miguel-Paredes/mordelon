@@ -21,7 +21,7 @@ import toast from "react-hot-toast";
 import { useUser } from "../hooks/us-user";
 import Image from "next/image";
 
-export default function Pedidos() {
+export default function PedidosCellPhone() {
   const user = useUser();
   const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,26 +30,25 @@ export default function Pedidos() {
     const fetchPedidos = async () => {
       try {
         // Verificar si los datos ya están en localStorage
-        const storedPedidos = localStorage.getItem("pedidos");
-        if (storedPedidos && storedPedidos?.length > 2) {
+        const storedPedidos = localStorage.getItem("admin");
+        if (storedPedidos) {
           const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
           setPedidos(parsedPedidos);
-          console.log(storedPedidos.length);
+          console.log(storedPedidos);
           setLoading(false);
           return;
         } else {
-          localStorage.removeItem("pedidos");
-          console.log("No hay pedidos almacenados o están vacíos.");
+          localStorage.removeItem("admin");
         }
 
         // Si no están en localStorage, obtenerlos de Firebase
-        const id_usuario = user?.uid;
-        const path = `users/${id_usuario}/pedidos/`;
+        const id_usuario = user?.uid; 
+        const path = `pedidos`;
         const query = [orderBy("createdAt", "desc")];
         const pedidosData = await getColection(path, query);
 
         // Guardar los datos en localStorage
-        localStorage.setItem("pedidos", JSON.stringify(pedidosData));
+        localStorage.setItem("admin", JSON.stringify(pedidosData));
         setPedidos(pedidosData as Pedidos_Usarios[]);
       } catch (error: any) {
         toast.error(error.message || "Error al cargar los pedidos", {

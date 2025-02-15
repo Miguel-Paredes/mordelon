@@ -61,6 +61,8 @@ export const singIn = async (user: { email: string; password: string }) => {
 // Cerrar la sesion del usario
 export const singOut = async () => {
   localStorage.removeItem("user");
+  localStorage.removeItem("cart");
+  localStorage.removeItem("pedidos");
   await auth.signOut().catch((error) => {
     return { success: false, message: "Error al cerrar la sesión" };
   });
