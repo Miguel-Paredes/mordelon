@@ -12,6 +12,8 @@ export const Navbar = () => {
   const user = useUser();
   const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(!!user);
 
+  const isAdmin = user?.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
+
   const cerrarSesion = async () => {
     await singOut();
     setIsUserLoggedIn(false);
@@ -77,13 +79,23 @@ export const Navbar = () => {
           >
             Portamordedor
           </Link>
-          <Link
-            href={"/carrito"}
-            className="text-white rounded-lg hover:underline"
-          >
-            Carrito
-          </Link>
-          {isUserLoggedIn && (
+          {!isAdmin && (
+            <Link
+              href={"/carrito"}
+              className="text-white rounded-lg hover:underline"
+            >
+              Carrito
+            </Link>
+          )}
+          {isUserLoggedIn && isAdmin && (
+            <Link
+              href={"/administrador"}
+              className="text-white rounded-lg hover:underline"
+            >
+              Pedidos Clientes
+            </Link>
+          )}
+          {isUserLoggedIn && !isAdmin && (
             <Link
               href={"/pedidos"}
               className="text-white rounded-lg hover:underline"

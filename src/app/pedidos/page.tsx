@@ -34,7 +34,6 @@ export default function Pedidos() {
         if (storedPedidos && storedPedidos?.length > 2) {
           const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
           setPedidos(parsedPedidos);
-          console.log(storedPedidos.length);
           setLoading(false);
           return;
         } else {

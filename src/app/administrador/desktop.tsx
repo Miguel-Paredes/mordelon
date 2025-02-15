@@ -36,13 +36,20 @@ export default function PedidosCellPhone() {
         if (storedPedidos) {
           const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
           setPedidos(parsedPedidos);
-          console.log(storedPedidos);
           setLoading(false);
           return;
         } else {
           localStorage.removeItem("admin");
         }
 
+        // Verificar si el usuario es el administrador
+        const isAdmin = user?.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
+        if (!isAdmin) {
+          // Si no es administrador, establecer un array vacío
+          setPedidos([]);
+          setLoading(false);
+          return;
+        }
         // Si no están en localStorage, obtenerlos de Firebase
         const path = `pedidos`;
         const query = [orderBy("createdAt", "desc")];
@@ -84,7 +91,7 @@ export default function PedidosCellPhone() {
       <h1 className="text-3xl font-bold text-center mb-8">Pedidos</h1>
       {pedidos.length > 0 ? (
         <div className="flex justify-center">
-          <div className={`w-full md:w-3/4`}>
+          <div className="w-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -96,6 +103,12 @@ export default function PedidosCellPhone() {
                   </TableHead>
                   <TableHead>
                     <p className="text-center">Fecha</p>
+                  </TableHead>
+                  <TableHead>
+                    <p className="text-center">Dirección</p>
+                  </TableHead>
+                  <TableHead>
+                    <p className="text-center">Nombre del bebé</p>
                   </TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>
@@ -130,6 +143,12 @@ export default function PedidosCellPhone() {
                           )
                         )}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-center">{pedido.direccion}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-center">{pedido.nombre_bebe}</p>
                     </TableCell>
                     <TableCell>${pedido.total.toFixed(2)}</TableCell>
                     <TableCell>

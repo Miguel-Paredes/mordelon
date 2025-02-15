@@ -1,44 +1,70 @@
-'use client'
-import { User } from "@/interfaces/user.interfaces"
-import { auth, getDocument } from "@/lib/firebase"
-import { onAuthStateChanged } from "firebase/auth"
-import { DocumentData } from "firebase/firestore"
-import { useEffect, useState } from "react"
-import { getFromLoacalStorage, setInLoacalStorage } from "../actions"
-import { usePathname, useRouter } from "next/navigation"
+"use client";
+import { User } from "@/interfaces/user.interfaces";
+import { auth, getDocument } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { DocumentData } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { getFromLoacalStorage, setInLoacalStorage } from "../actions";
 
 export const useUser = () => {
-    const [user, setUser] = useState<User | undefined | DocumentData>(undefined)
+  const [user, setUser] = useState<User | undefined | DocumentData>(undefined);
+  const pathname = usePathname();
+  const router = useRouter();
 
-    const pathName = usePathname();
-    const router = useRouter()
-    // Definimos las rutas a las que no se deben de acceder si no esta logueado
-    const protectedRoutes = ["/pedidos", "/administrador"];
-    // Verifica las rutas en las que se encuentra el usuario
-    const isInProtectedRoutes = protectedRoutes.includes(pathName);
+  // Rutas protegidas para usuarios no autenticados
+  const protectedRoutes = ["/pedidos", "/administrador"];
 
-    const gerUserFromBD = async (uid:string) => {
-        const path = `users/${uid}`
-        try {
-            const res = await getDocument(path)
-            setUser(res)
-            setInLoacalStorage('user', res)
-        } catch (error) {
-            
-        }
+  // Rutas exclusivas para el administrador
+  const adminOnlyRoutes = ["/administrador"];
+
+  // Rutas exclusivas para clientes
+  const clientOnlyRoutes = ["/pedidos", "/carrito"];
+
+  // Función para obtener el usuario desde Firestore
+  const getUserFromDB = async (uid: string) => {
+    const path = `users/${uid}`;
+    try {
+      const res = await getDocument(path);
+      setUser(res);
+      setInLoacalStorage("user", res);
+    } catch (error) {
+      console.error("Error al obtener el usuario:", error);
     }
-    useEffect(() => {
-        return onAuthStateChanged(auth, async (authUser) => {
-            if (authUser) {
-                const userInLocal = getFromLoacalStorage('user')
-                if(userInLocal) return setUser(userInLocal)
-                else gerUserFromBD(authUser.uid)
-            }else{
-                // En caso de cerrar sesion o que no este iniciado, declaramos undefinedre
-                setUser(undefined)
-                if(isInProtectedRoutes) return router.push('/auth')
-            }
-        })
-    }, [])
-    return user
-}
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        // Verificar si el usuario ya está en localStorage
+        const userInLocal = getFromLoacalStorage("user");
+        if (userInLocal) {
+          setUser(userInLocal);
+        } else {
+          await getUserFromDB(authUser.uid);
+        }
+
+        // Verificar si el usuario es el administrador
+        const isAdmin =
+          authUser.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
+
+        // Redirigir según el rol del usuario
+        if (isAdmin && clientOnlyRoutes.includes(pathname)) {
+          router.push("/administrador"); // Redirigir al administrador fuera de rutas de cliente
+        } else if (!isAdmin && adminOnlyRoutes.includes(pathname)) {
+          router.push("/"); // Redirigir a usuarios no administradores fuera de rutas de administrador
+        }
+      } else {
+        // Si no hay usuario autenticado, limpiar el estado y redirigir
+        setUser(undefined);
+        if (protectedRoutes.includes(pathname)) {
+          router.push("/auth");
+        }
+      }
+    });
+
+    return () => unsubscribe(); // Limpiar el listener al desmontar el componente
+  }, [pathname, router]);
+
+  return user;
+};

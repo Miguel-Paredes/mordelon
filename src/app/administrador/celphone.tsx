@@ -36,13 +36,19 @@ export default function PedidosDesktop() {
         if (storedPedidos) {
           const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
           setPedidos(parsedPedidos);
-          console.log(storedPedidos);
           setLoading(false);
           return;
         } else {
           localStorage.removeItem("admin");
         }
-
+        // Verificar si el usuario es el administrador
+        const isAdmin = user?.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
+        if (!isAdmin) {
+          // Si no es administrador, establecer un array vacío
+          setPedidos([]);
+          setLoading(false);
+          return;
+        }
         // Si no están en localStorage, obtenerlos de Firebase
         const path = `pedidos`;
         const query = [orderBy("createdAt", "desc")];
