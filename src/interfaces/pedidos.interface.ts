@@ -6,6 +6,7 @@ export interface Pedidos_Usarios{
     cantidad: number[],
     price: number[],
     total: number,
+    selectedImages: string[],
     createdAt: {
         seconds: number,
         nanoseconds: number

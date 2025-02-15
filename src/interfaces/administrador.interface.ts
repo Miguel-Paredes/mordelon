@@ -4,6 +4,7 @@ export interface Pedidos_Administrador {
   image: string[];
   babyInitial: string[];
   nombre_bebe: string;
+  selectedImages: string[],
   direccion: string;
   name: string[];
   cantidad: number[];

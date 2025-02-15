@@ -15,7 +15,9 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Estado para almacenar el producto seleccionado
-  const [selectedProduct, setSelectedProduct] = useState<Productos | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Productos | null>(
+    null
+  );
   // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
   // Estado para las imágenes seleccionadas
@@ -61,15 +63,19 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
         selectedProduct.nombre.includes("diseños a elección") &&
         selectedImages.length === 0
       ) {
-        toast("Debes seleccionar al menos una imagen.");
+        toast.error("Debes seleccionar al menos una imagen.");
         return;
       }
       if (
         selectedProduct.nombre.includes("diseños a elección") &&
-        selectedImages.length > 1 &&
-        selectedImages.length < quantity
+        selectedImages.length !== quantity
       ) {
-        toast(`Debes seleccionar ${quantity} imágenes.`);
+        const remaining = quantity - selectedImages.length;
+        toast.error(
+          remaining > 0
+            ? `Debes seleccionar ${remaining} imagen${remaining > 1 ? 'es' : ''} más.`
+            : `Has seleccionado demasiadas imágenes. Solo puedes seleccionar ${quantity}.`
+        );
         return;
       }
       // Obtener el carrito actual del localStorage
@@ -80,7 +86,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
         ...selectedProduct,
         quantity,
         selectedImages:
-          selectedProduct.nombre.includes("diseños a elección") && selectedImages.length === 1
+          selectedProduct.nombre.includes("diseños a elección") &&
+          selectedImages.length === 1
             ? Array(quantity).fill(selectedImages[0])
             : selectedImages,
       };
@@ -124,7 +131,11 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
     if (selectedImages.includes(image)) {
       setSelectedImages(selectedImages.filter((img) => img !== image)); // Deseleccionar
     } else {
-      setSelectedImages([...selectedImages, image]); // Seleccionar
+      if (selectedImages.length < quantity) {
+        setSelectedImages([...selectedImages, image]); // Seleccionar
+      }else{
+        toast.error(`Solo puedes seleccionar hasta ${quantity} imágenes`)
+      }
     }
   };
 
@@ -182,7 +193,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
             </h2>
             <p>
               {isInCart
-                ? `¿Deseas actualizar el pcaortachupón ${selectedProduct.nombre.toLowerCase()} en el carrito?`
+                ? `¿Deseas actualizar el portachupón ${selectedProduct.nombre.toLowerCase()} en el carrito?`
                 : `¿Deseas agregar el portachupón  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
             </p>
 
@@ -201,8 +212,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
               />
             </div>
 
-                        {/* Selección de imágenes */}
-                        {selectedProduct.nombre.includes("diseños a elección") && (
+            {/* Selección de imágenes */}
+            {selectedProduct.nombre.includes("diseños a elección") && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Selecciona hasta {quantity} imágenes:
@@ -228,11 +239,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                     </div>
                   ))}
                 </div>
-                {selectedImages.length > 0 && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    Imágenes seleccionadas: {selectedImages.length}
-                  </p>
-                )}
               </div>
             )}
 

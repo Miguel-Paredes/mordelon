@@ -1,6 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui";
 import Image from "next/image";
 import * as z from "zod";
 import { useUser } from "../hooks/us-user";
@@ -16,15 +23,18 @@ interface CartItem {
   imagen: string;
   quantity: number;
   babyInitial?: string | null;
-  phone: string;
   nombre_bebe: string;
   direccion: string;
+  selectedImages?: string[];
 }
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para controlar el modal
-  const [formData, setFormData] = useState<{ nombre_bebe: string; direccion: string }>({
+  const [formData, setFormData] = useState<{
+    nombre_bebe: string;
+    direccion: string;
+  }>({
     nombre_bebe: "",
     direccion: "",
   });
@@ -35,10 +45,10 @@ export default function CartPage() {
   const formSchema = z.object({
     name: z.array(z.string()),
     image: z.array(z.string()),
+    selectedImages: z.array(z.string()).default([]),
     cantidad: z.array(z.number()),
     price: z.array(z.number()),
     total: z.number(),
-    phone: z.string(),
     babyInitial: z.array(z.string()),
     nombre_bebe: z.string().min(3, "El nombre del bebé es requerido"),
     direccion: z.string().min(10, "La dirección es requerida"),
@@ -50,7 +60,11 @@ export default function CartPage() {
   // Función para cargar los productos del localStorage al estado
   const loadCartItems = () => {
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartItems(storedCart);
+    const updatedCart = storedCart.map((item: CartItem) => ({
+      ...item,
+      selectedImages: Array.isArray(item.selectedImages) ? item.selectedImages : [], // Asegúrate de que sea un array
+    }));
+    setCartItems(updatedCart);
   };
 
   // Cargar los productos del carrito cuando se monta el componente
@@ -75,6 +89,7 @@ export default function CartPage() {
 
   // Función para manejar el envío del formulario
   const onSubmit = async () => {
+    let pedido_realizado = false
     if (!user) {
       toast.error("Debes iniciar sesión para realizar un pedido.");
       return router.push("/auth");
@@ -86,11 +101,11 @@ export default function CartPage() {
       const validatedData = formSchema.parse({
         name: cartItems.map((item) => item.nombre),
         image: cartItems.map((item) => item.imagen),
+        selectedImages: cartItems.flatMap((item) => item.selectedImages || []),
         cantidad: cartItems.map((item) => item.quantity),
         price: cartItems.map((item) => item.precio),
         babyInitial: cartItems.map((item) => item.babyInitial || ""),
         total: calculateTotal(),
-        phone: user.phone,
         nombre_bebe: formData.nombre_bebe,
         direccion: formData.direccion,
       });
@@ -102,10 +117,10 @@ export default function CartPage() {
       await addDocument(`pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
-        cliente: user.uid
+        phone: user.phone,
+        cliente: user.name,
       });
-
-      toast.success("Pedido realizado exitosamente", { duration : 5000});
+      pedido_realizado = true
 
       // Limpiar el carrito del localStorage
       localStorage.removeItem("cart");
@@ -119,13 +134,17 @@ export default function CartPage() {
         duration: 5000,
       });
       setIsLoading(false);
+    }finally{
+      if(pedido_realizado) return toast.success("Pedido realizado exitosamente", { duration: 5000 });
     }
   };
 
   return (
     <>
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold text-center mb-8">Carrito de Compras</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Carrito de Compras
+        </h1>
 
         {/* Mostrar mensaje si el carrito está vacío */}
         {cartItems.length === 0 ? (
@@ -159,7 +178,41 @@ export default function CartPage() {
 
                 {/* Detalles del producto */}
                 <div className="flex-1 ml-4">
-                  <h3 className="text-lg font-semibold">{item.nombre}</h3>
+                  <div className="flex justify-start">
+                    <h3 className="text-lg font-semibold mr-4">
+                      {item.nombre}                    
+                    </h3>
+                    {item.nombre.includes("diseños a elección") && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="flex justify-center">
+                            <Button variant="outline">Ver</Button>
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>
+                              <p className="text-center">
+                                Clips elegidos
+                              </p>
+                            </DialogTitle>
+                            <div className="flex justify-center space-x-2">
+                              {item.selectedImages && item.selectedImages.map((imagen, index) => (
+                                <Image
+                                  key={index}
+                                  src={imagen}
+                                  alt={"Imágen clip"}
+                                  width={1000}
+                                  height={1000}
+                                  className="h-16 w-16 rounded-full border-2 border-gray-200"
+                                />
+                              ))}
+                            </div>
+                          </DialogHeader>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
                   <p className="text-gray-600">Precio: ${item.precio}</p>
                   <p className="text-gray-600">Cantidad: {item.quantity}</p>
                   {item.babyInitial && (
@@ -202,7 +255,10 @@ export default function CartPage() {
             <h2 className="text-xl font-bold mb-4">Datos del Pedido</h2>
 
             {/* Formulario dentro del modal */}
-            <form className="space-y-4">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              onSubmit()
+            }} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Nombre del Bebé
@@ -211,7 +267,10 @@ export default function CartPage() {
                   type="text"
                   value={formData.nombre_bebe}
                   onChange={(e) =>
-                    setFormData({ ...formData, nombre_bebe: e.target.value.toUpperCase() })
+                    setFormData({
+                      ...formData,
+                      nombre_bebe: e.target.value.toUpperCase(),
+                    })
                   }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Juan"
@@ -226,7 +285,10 @@ export default function CartPage() {
                   type="text"
                   value={formData.direccion}
                   onChange={(e) =>
-                    setFormData({ ...formData, direccion: e.target.value.toUpperCase() })
+                    setFormData({
+                      ...formData,
+                      direccion: e.target.value.toUpperCase(),
+                    })
                   }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Av. Pedro Vicente Maldonado S11-122, Quito 170111"
@@ -242,8 +304,8 @@ export default function CartPage() {
                   Cancelar
                 </Button>
                 <Button
+                  type="submit"
                   className="bg-[#6edad2] text-[#09282a] hover:bg-[#3dbdb8]"
-                  onClick={onSubmit} // Enviar el formulario
                 >
                   Confirmar Pedido
                 </Button>

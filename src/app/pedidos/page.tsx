@@ -110,9 +110,15 @@ export default function Pedidos() {
                       <p className="hidden md:block">{index + 1}</p>
                     </TableCell>
                     <TableCell>
-                      {pedido.name.map((nombre, idx) => (
-                        <p key={idx}>{nombre}</p>
+                      {pedido.name.slice(0, 2).map((nombre, idx) => (
+                        <p key={idx}>
+                          {nombre}
+                          <span>
+                            <b>{" " + pedido.babyInitial[idx]}</b>
+                          </span>
+                        </p>
                       ))}
+                      {pedido.name.length > 2 && <p>...</p>}
                     </TableCell>
                     <TableCell>
                       {/* Mostrar la fecha formateada */}
@@ -165,13 +171,51 @@ export default function Pedidos() {
                                     ${pedido.price[idx].toFixed(2)}
                                   </TableCell>
                                   <TableCell>
-                                    <Image
-                                      src={pedido.image[idx]}
-                                      alt={nombre}
-                                      width={50}
-                                      height={50}
-                                      className="rounded-md"
-                                    />
+                                    {pedido.name[idx].includes(
+                                      "diseños a elección"
+                                    ) ? (
+                                      <Dialog>
+                                        <DialogTrigger asChild>
+                                          <div className="flex justify-center">
+                                            <Button variant="outline">
+                                              Ver
+                                            </Button>
+                                          </div>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>
+                                              <p className="text-center">
+                                                Clips elegidos
+                                              </p>
+                                            </DialogTitle>
+                                            <div className="flex justify-center space-x-2">
+                                              {pedido.selectedImages &&
+                                                pedido.selectedImages.map(
+                                                  (imagen, index) => (
+                                                    <Image
+                                                      key={index}
+                                                      src={imagen}
+                                                      alt={"Imágen clip"}
+                                                      width={1000}
+                                                      height={1000}
+                                                      className="h-16 w-16 rounded-full border-2 border-gray-200"
+                                                    />
+                                                  )
+                                                )}
+                                            </div>
+                                          </DialogHeader>
+                                        </DialogContent>
+                                      </Dialog>
+                                    ) : (
+                                      <Image
+                                        src={pedido.image[idx]}
+                                        alt={nombre}
+                                        width={50}
+                                        height={50}
+                                        className="rounded-md"
+                                      />
+                                    )}
                                   </TableCell>
                                   <TableCell>
                                     $
