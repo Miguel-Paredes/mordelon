@@ -11,4 +11,5 @@ export interface Pedidos_Usarios{
         seconds: number,
         nanoseconds: number
     },
+    estado: "En revisión" | "Pagado";
 }

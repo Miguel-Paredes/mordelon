@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui";
-import { getColection } from "@/lib/firebase";
+import { getColection, updateDocument } from "@/lib/firebase";
 import { orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -27,6 +27,9 @@ export default function PedidosDesktop() {
   const user = useUser();
   const [pedidos, setPedidos] = useState<Pedidos_Administrador[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtroEstado, setFiltroEstado] = useState<string>("todos"); // Filtro por estado
+  const [filtroFecha, setFiltroFecha] = useState<string>("todas"); // Estado para almacenar la fecha seleccionada
+  const [filtroNombreBebe, setFiltroNombreBebe] = useState<string>(""); // Filtro por nombre del bebé
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -85,12 +88,105 @@ export default function PedidosDesktop() {
     });
   };
 
+  // Obtener fechas únicas de los pedidos
+  const fechasUnicas = Array.from(
+    new Set(
+      pedidos.map((pedido) =>
+        formatearFecha(
+          convertirAFecha(
+            pedido.createdAt.seconds,
+            pedido.createdAt.nanoseconds
+          )
+        )
+      )
+    )
+  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()); // Ordenar de más reciente a más antiguo
+
+  // Filtrar los pedidos según los filtros aplicados
+  const pedidosFiltrados = pedidos.filter((pedido) => {
+    const fechaPedido = formatearFecha(
+      convertirAFecha(pedido.createdAt.seconds, pedido.createdAt.nanoseconds)
+    );
+
+    // Aplicar filtro de estado
+    const cumpleFiltroEstado =
+      filtroEstado === "todos" || pedido.estado === filtroEstado;
+
+    // Aplicar filtro de fecha
+    const cumpleFiltroFecha =
+      filtroFecha === "todas" || fechaPedido === filtroFecha;
+
+    // Aplicar filtro de nombre del bebé (ignorando mayúsculas/minúsculas)
+    const cumpleFiltroNombreBebe =
+      filtroNombreBebe.trim() === "" ||
+      pedido.nombre_bebe.toLowerCase().includes(filtroNombreBebe.toLowerCase());
+
+    return cumpleFiltroEstado && cumpleFiltroFecha && cumpleFiltroNombreBebe;
+  });
+
+  const cambiarEstado = async (idPedidoAdministrador: string, idCliente: string, idPedidoCliente: string) => {
+    const pathAdministrador = `pedidos`;
+    const pathCliente = `users/${idCliente}/pedidos`;
+  
+    try {
+      await updateDocument(pathAdministrador, idPedidoAdministrador);
+      await updateDocument(pathCliente, idPedidoCliente);
+  
+      // Eliminar caché de localStorage
+      localStorage.removeItem('admin');
+  
+      // Volver a cargar los datos actualizados desde Firebase
+      const path = `pedidos`;
+      const query = [orderBy("createdAt", "desc")];
+      const pedidosData = await getColection(path, query);
+  
+      // Actualizar el estado local con los nuevos datos
+      setPedidos(pedidosData as Pedidos_Administrador[]);
+    } catch (error) {
+      toast.error("Error al actualizar el estado del pedido");
+    }
+  };
+
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold text-center mb-8">Pedidos</h1>
-      {pedidos.length > 0 ? (
+      <div className="w-full flex justify-between space-x-2">
+        {/* Selector de filtro por estado */}
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          className="m-2 p-2 rounded-lg"
+        >
+          <option value="todos">Todos los estados</option>
+          <option value="Pagado">Pagado</option>
+          <option value="En revisión">En revisión</option>
+        </select>
+        {/* Selector de filtro por fecha */}
+        <select
+          value={filtroFecha}
+          onChange={(e) => setFiltroFecha(e.target.value)}
+          className="m-2 p-2 rounded-lg"
+        >
+          <option value="todas">Todas las fechas</option>
+          {fechasUnicas.map((fecha, index) => (
+            <option key={index} value={fecha}>
+              {fecha}
+            </option>
+          ))}
+        </select>
+      </div>
+        {/* Selector de filtro por nombre del bebe */}
+        <input
+          type="text"
+          placeholder="Buscar por nombre del bebé..."
+          value={filtroNombreBebe}
+          onChange={(e) => setFiltroNombreBebe(e.target.value.toUpperCase())}
+          className="w-full border-2 border-gray-200 m-2 p-2 rounded-lg"
+        />
+      {pedidosFiltrados.length > 0 ? (
         <div className="w-full">
-          {pedidos.map((pedido, index) => (
+          {pedidosFiltrados.map((pedido, index) => (
             <div
               key={index}
               className="rounded-lg overflow-hidden shadow-lg py-2 my-4 bg-gray-100"
@@ -106,6 +202,16 @@ export default function PedidosDesktop() {
                       )
                     )}
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <b>Estado:</b>
+                  {pedido.estado === "Pagado" ? (
+                    <p className="text-center text-green-500">
+                      {pedido.estado}
+                    </p>
+                  ) : (
+                    <p className="text-center text-red-500">{pedido.estado}</p>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <b>Total:</b>

@@ -26,6 +26,7 @@ interface CartItem {
   nombre_bebe: string;
   direccion: string;
   selectedImages?: string[];
+  estado: "En revisión" | "Pagado";
 }
 
 export default function CartPage() {
@@ -110,15 +111,19 @@ export default function CartPage() {
         direccion: formData.direccion,
       });
       // Crear el pedido en Firebase
-      await addDocument(`users/${user.uid}/pedidos`, {
+      const pedidoCliente = await addDocument(`users/${user.uid}/pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
+        estado: "En revisión"
       });
       await addDocument(`pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
         phone: user.phone,
         cliente: user.name,
+        estado: "En revisión",
+        idcliente: user.uid,
+        idpedido: pedidoCliente.id
       });
       pedido_realizado = true
 

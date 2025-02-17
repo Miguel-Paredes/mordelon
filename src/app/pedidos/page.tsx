@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui";
 import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
-import { getColection } from "@/lib/firebase";
+import { getColection, updateDocument } from "@/lib/firebase";
 import { orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -25,6 +25,9 @@ export default function Pedidos() {
   const user = useUser();
   const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtroEstado, setFiltroEstado] = useState<string>("todos"); // Filtro por estado
+  const [filtroFecha, setFiltroFecha] = useState<string>("todas"); // Estado para almacenar la fecha seleccionada
+  const [filtroNombreBebe, setFiltroNombreBebe] = useState<string>(""); // Filtro por nombre del bebé
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -78,10 +81,66 @@ export default function Pedidos() {
     });
   };
 
+  // Obtener fechas únicas de los pedidos
+  const fechasUnicas = Array.from(
+    new Set(
+      pedidos.map((pedido) =>
+        formatearFecha(
+          convertirAFecha(
+            pedido.createdAt.seconds,
+            pedido.createdAt.nanoseconds
+          )
+        )
+      )
+    )
+  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()); // Ordenar de más reciente a más antiguo
+
+  // Filtrar los pedidos según los filtros aplicados
+  const pedidosFiltrados = pedidos.filter((pedido) => {
+    const fechaPedido = formatearFecha(
+      convertirAFecha(pedido.createdAt.seconds, pedido.createdAt.nanoseconds)
+    );
+
+    // Aplicar filtro de estado
+    const cumpleFiltroEstado =
+      filtroEstado === "todos" || pedido.estado === filtroEstado;
+
+    // Aplicar filtro de fecha
+    const cumpleFiltroFecha =
+      filtroFecha === "todas" || fechaPedido === filtroFecha;
+
+    return cumpleFiltroEstado && cumpleFiltroFecha;
+  });
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold text-center mb-8">Pedidos</h1>
-      {pedidos.length > 0 ? (
+      <div className="w-full flex justify-center space-x-2 mb-4">
+        {/* Selector de filtro por estado */}
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          className="m-2 p-2 rounded-lg"
+        >
+          <option value="todos">Todos los estados</option>
+          <option value="Pagado">Pagado</option>
+          <option value="En revisión">En revisión</option>
+        </select>
+        {/* Selector de filtro por fecha */}
+        <select
+          value={filtroFecha}
+          onChange={(e) => setFiltroFecha(e.target.value)}
+          className="m-2 p-2 rounded-lg"
+        >
+          <option value="todas">Todas las fechas</option>
+          {fechasUnicas.map((fecha, index) => (
+            <option key={index} value={fecha}>
+              {fecha}
+            </option>
+          ))}
+        </select>
+      </div>
+      {pedidosFiltrados.length > 0 ? (
         <div className="flex justify-center">
           <div className={`w-full md:w-3/4`}>
             <Table>
@@ -96,14 +155,19 @@ export default function Pedidos() {
                   <TableHead>
                     <p className="text-center">Fecha</p>
                   </TableHead>
-                  <TableHead>Total</TableHead>
+                  <TableHead>
+                    <p className="text-center">Estado</p>
+                  </TableHead>
+                  <TableHead>
+                    <p className="text-center">Total</p>
+                  </TableHead>
                   <TableHead>
                     <p className="text-center">Acciones</p>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pedidos.map((pedido, index) => (
+                {pedidosFiltrados.map((pedido, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <p className="hidden md:block">{index + 1}</p>
@@ -130,7 +194,12 @@ export default function Pedidos() {
                         )}
                       </span>
                     </TableCell>
-                    <TableCell>${pedido.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <p className="text-center">{pedido.estado}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-center">${pedido.total.toFixed(2)}</p>
+                    </TableCell>
                     <TableCell>
                       <Dialog>
                         <DialogTrigger asChild>

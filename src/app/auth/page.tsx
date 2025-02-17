@@ -19,7 +19,7 @@ export default function Page() {
               alt="Imagen de login"
               width={1000}
               height={1000}
-              className="absolute inset-0 h-full w-full"
+              className="absolute inset-0 h-full w-full rounded-lg"
             />
           </div>
           {/* Formulario */}

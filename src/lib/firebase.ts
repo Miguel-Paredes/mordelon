@@ -17,6 +17,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -107,4 +108,19 @@ export const getColection = async ( colecctionName : string, querryArray?: any[]
   const q = querryArray ? query(ref, ...querryArray) : query(ref)
     // * Mostramos la informacion empezando por el id y luego el resto
   return ( await getDocs(q)).docs.map( (doc) => ( { id: doc.id, ...doc.data() } ) )
+}
+
+export const updateDocument = async (path: string, documentId: string) => {
+  // Crear referencia al documento que deseas actualizar
+  const docRef = doc(db, path, documentId);
+  
+  try {
+    // Actualizar la propiedad 'estado' a "Pagado"
+    await updateDoc(docRef, {
+      estado: "Pagado"
+    });
+    console.log("Documento actualizado correctamente");
+  } catch (error) {
+    console.error("Error actualizando el documento: ", error);
+  }
 }

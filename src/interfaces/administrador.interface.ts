@@ -4,7 +4,7 @@ export interface Pedidos_Administrador {
   image: string[];
   babyInitial: string[];
   nombre_bebe: string;
-  selectedImages: string[],
+  selectedImages: string[];
   direccion: string;
   name: string[];
   cantidad: number[];
@@ -14,4 +14,7 @@ export interface Pedidos_Administrador {
     seconds: number;
     nanoseconds: number;
   };
+  estado: "En revisión" | "Pagado";
+  idcliente: string;
+  idpedido: string;
 }
