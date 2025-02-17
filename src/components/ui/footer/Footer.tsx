@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaFacebook, FaWhatsapp } from "react-icons/fa";
 
 export const Footer = () => {
   return (
@@ -11,13 +11,20 @@ export const Footer = () => {
         </p>
       </div>
       <div className="flex justify-center order-1 md:order-2">
-        <div className="mx-4">
+        <div className="mx-4 mb-4 md:mb-0 flex justify-center space-x-2">
           <Link
             href={"https://wa.me/+593960667241"}
             className="flex justify-center hover:underline"
           >
             <FaWhatsapp size={25} className="whatsapp-icon" />
-            <span className="mx-1 text-white">WhatsApp</span>
+            <span className="mx-1 text-white hidden md:block">WhatsApp</span>
+          </Link>
+          <Link
+            href={"https://www.facebook.com/share/1AHNeR7tNa/"}
+            className="flex justify-center hover:underline"
+          >
+            <FaFacebook size={25} className="facebook-icon" />
+            <span className="mx-1 text-white hidden md:block">Facebook</span>
           </Link>
         </div>
       </div>
