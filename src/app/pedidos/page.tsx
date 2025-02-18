@@ -27,7 +27,6 @@ export default function Pedidos() {
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>("todos"); // Filtro por estado
   const [filtroFecha, setFiltroFecha] = useState<string>("todas"); // Estado para almacenar la fecha seleccionada
-  const [filtroNombreBebe, setFiltroNombreBebe] = useState<string>(""); // Filtro por nombre del bebé
 
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -204,7 +203,7 @@ export default function Pedidos() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <div className="flex justify-center">
-                            <Button variant="outline">Ver pedido</Button>
+                            <Button variant="outline">Ver</Button>
                           </div>
                         </DialogTrigger>
                         <DialogContent>

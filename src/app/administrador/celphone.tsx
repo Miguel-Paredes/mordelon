@@ -34,16 +34,6 @@ export default function PedidosDesktop() {
   useEffect(() => {
     const fetchPedidos = async () => {
       try {
-        // Verificar si los datos ya están en localStorage
-        const storedPedidos = localStorage.getItem("admin");
-        if (storedPedidos) {
-          const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
-          setPedidos(parsedPedidos);
-          setLoading(false);
-          return;
-        } else {
-          localStorage.removeItem("admin");
-        }
         // Verificar si el usuario es el administrador
         const isAdmin = user?.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
         if (!isAdmin) {
@@ -57,8 +47,6 @@ export default function PedidosDesktop() {
         const query = [orderBy("createdAt", "desc")];
         const pedidosData = await getColection(path, query);
 
-        // Guardar los datos en localStorage
-        localStorage.setItem("admin", JSON.stringify(pedidosData));
         setPedidos(pedidosData as Pedidos_Administrador[]);
       } catch (error: any) {
         toast.error(error.message || "Error al cargar los pedidos", {
@@ -124,29 +112,29 @@ export default function PedidosDesktop() {
     return cumpleFiltroEstado && cumpleFiltroFecha && cumpleFiltroNombreBebe;
   });
 
-  const cambiarEstado = async (idPedidoAdministrador: string, idCliente: string, idPedidoCliente: string) => {
+  const cambiarEstado = async (
+    idPedidoAdministrador: string,
+    idCliente: string,
+    idPedidoCliente: string
+  ) => {
     const pathAdministrador = `pedidos`;
     const pathCliente = `users/${idCliente}/pedidos`;
-  
+
     try {
       await updateDocument(pathAdministrador, idPedidoAdministrador);
       await updateDocument(pathCliente, idPedidoCliente);
-  
-      // Eliminar caché de localStorage
-      localStorage.removeItem('admin');
-  
+
       // Volver a cargar los datos actualizados desde Firebase
       const path = `pedidos`;
       const query = [orderBy("createdAt", "desc")];
       const pedidosData = await getColection(path, query);
-  
+
       // Actualizar el estado local con los nuevos datos
       setPedidos(pedidosData as Pedidos_Administrador[]);
     } catch (error) {
       toast.error("Error al actualizar el estado del pedido");
     }
   };
-
 
   return (
     <div className="container mx-auto p-4">
@@ -176,14 +164,14 @@ export default function PedidosDesktop() {
           ))}
         </select>
       </div>
-        {/* Selector de filtro por nombre del bebe */}
-        <input
-          type="text"
-          placeholder="Buscar por nombre del bebé..."
-          value={filtroNombreBebe}
-          onChange={(e) => setFiltroNombreBebe(e.target.value.toUpperCase())}
-          className="w-full border-2 border-gray-200 m-2 p-2 rounded-lg"
-        />
+      {/* Selector de filtro por nombre del bebe */}
+      <input
+        type="text"
+        placeholder="Buscar por nombre del bebé..."
+        value={filtroNombreBebe}
+        onChange={(e) => setFiltroNombreBebe(e.target.value.toUpperCase())}
+        className="w-full border-2 border-gray-200 m-2 p-2 rounded-lg"
+      />
       {pedidosFiltrados.length > 0 ? (
         <div className="w-full">
           {pedidosFiltrados.map((pedido, index) => (
@@ -242,6 +230,39 @@ export default function PedidosDesktop() {
                       <FaWhatsapp size={30} />
                     </Button>
                   </Link>
+                  {pedido.estado === "En revisión" && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          className="bg-red-400 hover:bg-red-300"
+                          variant="outline"
+                        >
+                          Pagado
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <div className="text-center">
+                            <DialogTitle>
+                              Va a confirmar el pago del cliente
+                            </DialogTitle>
+                          </div>
+                        </DialogHeader>
+                        <Button
+                          className="bg-green-400"
+                          onClick={() =>
+                            cambiarEstado(
+                              pedido.id,
+                              pedido.idcliente,
+                              pedido.idpedido
+                            )
+                          }
+                        >
+                          Pagado
+                        </Button>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline">Ver pedido</Button>

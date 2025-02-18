@@ -34,17 +34,6 @@ export default function PedidosDesktop() {
   useEffect(() => {
     const fetchPedidos = async () => {
       try {
-        // Verificar si los datos ya están en localStorage
-        const storedPedidos = localStorage.getItem("admin");
-        if (storedPedidos) {
-          const parsedPedidos = JSON.parse(storedPedidos); // Convertir de string a objeto
-          setPedidos(parsedPedidos);
-          setLoading(false);
-          return;
-        } else {
-          localStorage.removeItem("admin");
-        }
-
         // Verificar si el usuario es el administrador
         const isAdmin = user?.uid === process.env.NEXT_PUBLIC_ID_ADMINISTRADOR;
         if (!isAdmin) {
@@ -58,8 +47,6 @@ export default function PedidosDesktop() {
         const query = [orderBy("createdAt", "desc")];
         const pedidosData = await getColection(path, query);
 
-        // Guardar los datos en localStorage
-        localStorage.setItem("admin", JSON.stringify(pedidosData));
         setPedidos(pedidosData as Pedidos_Administrador[]);
       } catch (error: any) {
         toast.error(error.message || "Error al cargar los pedidos", {
@@ -132,10 +119,7 @@ export default function PedidosDesktop() {
     try {
       await updateDocument(pathAdministrador, idPedidoAdministrador);
       await updateDocument(pathCliente, idPedidoCliente);
-  
-      // Eliminar caché de localStorage
-      localStorage.removeItem('admin');
-  
+
       // Volver a cargar los datos actualizados desde Firebase
       const path = `pedidos`;
       const query = [orderBy("createdAt", "desc")];
@@ -265,7 +249,19 @@ export default function PedidosDesktop() {
                           </Button>
                         </Link>
                         {pedido.estado === "En revisión" && (
-                          <Button className="bg-red-400" onClick={()=>cambiarEstado(pedido.id, pedido.idcliente, pedido.idpedido)}>Pagado</Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button className="bg-red-400 hover:bg-red-300" variant="outline">Pagado</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <div className="text-center">
+                                  <DialogTitle>Va a confirmar el pago del cliente</DialogTitle>
+                                </div>
+                              </DialogHeader>
+                              <Button className="bg-green-400" onClick={()=>cambiarEstado(pedido.id, pedido.idcliente, pedido.idpedido)}>Pagado</Button>
+                            </DialogContent>
+                          </Dialog>
                         )}
                         <Dialog>
                           <DialogTrigger asChild>

@@ -12,9 +12,10 @@ import Image from "next/image";
 import * as z from "zod";
 import { useUser } from "../hooks/us-user";
 import Router from "next/router";
-import { addDocument } from "@/lib/firebase";
+import { addDocument, getColection } from "@/lib/firebase";
 import toast from "react-hot-toast";
-import { serverTimestamp } from "firebase/firestore";
+import { orderBy, serverTimestamp } from "firebase/firestore";
+import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
 
 interface CartItem {
   nombre: string;
@@ -32,6 +33,7 @@ interface CartItem {
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para controlar el modal
+  const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [formData, setFormData] = useState<{
     nombre_bebe: string;
     direccion: string;
@@ -95,6 +97,14 @@ export default function CartPage() {
       toast.error("Debes iniciar sesión para realizar un pedido.");
       return router.push("/auth");
     }
+
+    const id_usuario = user?.uid;
+    const path = `users/${id_usuario}/pedidos/`;
+    const query = [orderBy("createdAt", "desc")];
+    const pedidosData = await getColection(path, query);
+    setPedidos(pedidosData as Pedidos_Usarios[]);
+    console.log(pedidos)
+    if(pedidos && pedidos[0].estado === 'En revisión') return toast(`Primero debes de pagar tu anterior pedido que es de $${pedidos[0].total}`, { icon: '😅', duration: 5000 } )
 
     setIsLoading(true);
     try {
