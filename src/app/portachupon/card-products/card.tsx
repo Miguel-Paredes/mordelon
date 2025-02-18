@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
@@ -12,26 +12,30 @@ interface CardProductsProps {
 }
 
 export const CardProducts = ({ productos }: CardProductsProps) => {
-  // Estado para controlar la visibilidad del modal
+  // Estados para controlar la lógica del componente
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Estado para almacenar el producto seleccionado
   const [selectedProduct, setSelectedProduct] = useState<Productos | null>(
     null
   );
-  // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
-  // Estado para las imágenes seleccionadas
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  // Estado para verificar si el producto ya está en el carrito
   const [isInCart, setIsInCart] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
+  // Cargar el carrito desde localStorage cuando el componente se monta
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCartItems(currentCart);
+    }
+  }, []);
 
   // Función para abrir el modal y seleccionar el producto
   const handleAddToCart = (product: Productos) => {
     setSelectedProduct(product);
 
     // Verificar si el producto ya está en el carrito
-    const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingProduct = currentCart.find(
+    const existingProduct = cartItems.find(
       (item: any) => item.nombre === product.nombre
     );
 
@@ -66,6 +70,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
         toast.error("Debes seleccionar al menos una imagen.");
         return;
       }
+
       if (
         selectedProduct.nombre.includes("diseños a elección") &&
         selectedImages.length !== quantity
@@ -73,15 +78,15 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
         const remaining = quantity - selectedImages.length;
         toast.error(
           remaining > 0
-            ? `Debes seleccionar ${remaining} imagen${remaining > 1 ? 'es' : ''} más.`
+            ? `Debes seleccionar ${remaining} imagen${
+                remaining > 1 ? "es" : ""
+              } más.`
             : `Has seleccionado demasiadas imágenes. Solo puedes seleccionar ${quantity}.`
         );
         return;
       }
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-      // Crear un objeto con la información del producto, cantidad e inicial del bebé
+      // Crear un objeto con la información del producto, cantidad e imágenes seleccionadas
       const productToUpdate = {
         ...selectedProduct,
         quantity,
@@ -94,16 +99,20 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
 
       // Actualizar el carrito
       const updatedCart = isInCart
-        ? currentCart.map((item: any) =>
+        ? cartItems.map((item: any) =>
             item.nombre === selectedProduct.nombre ? productToUpdate : item
           )
-        : [...currentCart, productToUpdate];
+        : [...cartItems, productToUpdate];
 
       // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-      isInCart
-        ? toast.success("Producto actualizado en el carrito!")
-        : toast.success("Producto añadido al carrito!");
+
+      toast.success(
+        isInCart
+          ? "Producto actualizado en el carrito!"
+          : "Producto añadido al carrito!"
+      );
       closeModal();
     }
   };
@@ -111,15 +120,13 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Función para eliminar el producto del localStorage
   const removeFromLocalStorage = () => {
     if (selectedProduct) {
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-
       // Filtrar el carrito para eliminar el producto
-      const updatedCart = currentCart.filter(
+      const updatedCart = cartItems.filter(
         (item: any) => item.nombre !== selectedProduct.nombre
       );
 
       // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       toast.success("Producto eliminado del carrito!");
       closeModal();
@@ -133,8 +140,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
     } else {
       if (selectedImages.length < quantity) {
         setSelectedImages([...selectedImages, image]); // Seleccionar
-      }else{
-        toast.error(`Solo puedes seleccionar hasta ${quantity} imágenes`)
+      } else {
+        toast.error(`Solo puedes seleccionar hasta ${quantity} imágenes`);
       }
     }
   };
@@ -144,9 +151,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       {/* Lista de productos */}
       <div className="flex flex-wrap w-full gap-8 justify-center pt-4">
         {productos.map((product, index) => {
-          // Verificar si el producto ya está en el carrito
-          const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-          const existingProduct = currentCart.find(
+          const existingProduct = cartItems.find(
             (item: any) => item.nombre === product.nombre
           );
           const isAlreadyInCart = !!existingProduct;
@@ -194,7 +199,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
             <p>
               {isInCart
                 ? `¿Deseas actualizar el portachupón ${selectedProduct.nombre.toLowerCase()} en el carrito?`
-                : `¿Deseas agregar el portachupón  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
+                : `¿Deseas agregar el portachupón ${selectedProduct.nombre.toLowerCase()} al carrito?`}
             </p>
 
             {/* Selector de cantidad */}
@@ -222,19 +227,19 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                   {Portachupones.map((clip, index) => (
                     <div
                       key={index}
-                      className={`relative w-20 h-20 cursor-pointer border-2 ${
-                        selectedImages.includes(clip.imagen)
-                          ? "border-blue-500"
-                          : "border-gray-300"
-                      } rounded-md overflow-hidden`}
                       onClick={() => handleImageSelect(clip.imagen)}
+                      className={`w-16 h-16 rounded-full cursor-pointer ${
+                        selectedImages.includes(clip.imagen)
+                          ? "border-2 border-blue-500"
+                          : ""
+                      }`}
                     >
                       <Image
                         src={clip.imagen}
-                        alt={`Clip ${index + 1}`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-full"
+                        alt={`Diseño ${index}`}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover rounded-full"
                       />
                     </div>
                   ))}

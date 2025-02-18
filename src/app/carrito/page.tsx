@@ -103,8 +103,12 @@ export default function CartPage() {
     const query = [orderBy("createdAt", "desc")];
     const pedidosData = await getColection(path, query);
     setPedidos(pedidosData as Pedidos_Usarios[]);
-    console.log(pedidos)
-    if(pedidos && pedidos[0].estado === 'En revisión') return toast(`Primero debes de pagar tu anterior pedido que es de $${pedidos[0].total}`, { icon: '😅', duration: 5000 } )
+    for (let i = 0; i < pedidos.length; i++) {
+      const pedido = pedidos[i];
+      if (pedido.estado === 'En revisión') {
+        return toast(`Primero debes de pagar tu anterior pedido que es de $${pedido.total}`, { icon: '😅', duration: 5000 });
+      }
+    }
 
     setIsLoading(true);
     try {

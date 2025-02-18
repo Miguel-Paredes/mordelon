@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
@@ -11,24 +11,29 @@ interface CardProductsProps {
 }
 
 export const CardProducts = ({ productos }: CardProductsProps) => {
-  // Estado para controlar la visibilidad del modal
+  // Estados para controlar la lógica del componente
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Estado para almacenar el producto seleccionado
   const [selectedProduct, setSelectedProduct] = useState<Productos | null>(
     null
   );
-  // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
-  // Estado para verificar si el producto ya está en el carrito
   const [isInCart, setIsInCart] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
+  // Cargar el carrito desde localStorage cuando el componente se monta
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCartItems(currentCart);
+    }
+  }, []);
 
   // Función para abrir el modal y seleccionar el producto
   const handleAddToCart = (product: Productos) => {
     setSelectedProduct(product);
 
     // Verificar si el producto ya está en el carrito
-    const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingProduct = currentCart.find(
+    const existingProduct = cartItems.find(
       (item: any) => item.nombre === product.nombre
     );
 
@@ -53,10 +58,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Función para agregar o actualizar el producto en el localStorage
   const updateLocalStorage = () => {
     if (selectedProduct) {
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-      // Crear un objeto con la información del producto, cantidad e inicial del bebé
+      // Crear un objeto con la información del producto y cantidad
       const productToUpdate = {
         ...selectedProduct,
         quantity,
@@ -64,16 +66,20 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
 
       // Actualizar el carrito
       const updatedCart = isInCart
-        ? currentCart.map((item: any) =>
+        ? cartItems.map((item: any) =>
             item.nombre === selectedProduct.nombre ? productToUpdate : item
           )
-        : [...currentCart, productToUpdate];
+        : [...cartItems, productToUpdate];
 
       // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-      isInCart
-        ? toast.success("Producto actualizado en el carrito!")
-        : toast.success("Producto añadido al carrito!");
+
+      toast.success(
+        isInCart
+          ? "Producto actualizado en el carrito!"
+          : "Producto añadido al carrito!"
+      );
       closeModal();
     }
   };
@@ -81,15 +87,13 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   // Función para eliminar el producto del localStorage
   const removeFromLocalStorage = () => {
     if (selectedProduct) {
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-
       // Filtrar el carrito para eliminar el producto
-      const updatedCart = currentCart.filter(
+      const updatedCart = cartItems.filter(
         (item: any) => item.nombre !== selectedProduct.nombre
       );
 
       // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       toast.success("Producto eliminado del carrito!");
       closeModal();
@@ -101,9 +105,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       {/* Lista de productos */}
       <div className="flex flex-wrap w-full gap-8 justify-center pt-4">
         {productos.map((product, index) => {
-          // Verificar si el producto ya está en el carrito
-          const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-          const existingProduct = currentCart.find(
+          const existingProduct = cartItems.find(
             (item: any) => item.nombre === product.nombre
           );
           const isAlreadyInCart = !!existingProduct;

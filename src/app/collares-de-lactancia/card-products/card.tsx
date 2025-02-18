@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
@@ -19,48 +19,43 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   );
   // Estado para la cantidad
   const [quantity, setQuantity] = useState(1);
-  // Estado para la inicial del bebé
   const [babyInitial, setBabyInitial] = useState("");
   // Estado para verificar si el producto ya está en el carrito
   const [isInCart, setIsInCart] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
 
-  // Función para abrir el modal y seleccionar el producto
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCartItems(currentCart);
+    }
+  }, []);
+
   const handleAddToCart = (product: Productos) => {
     setSelectedProduct(product);
-
-    // Verificar si el producto ya está en el carrito
-    const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingProduct = currentCart.find(
+    const existingProduct = cartItems.find(
       (item: any) => item.nombre === product.nombre
     );
-
     if (existingProduct) {
-      setIsInCart(true); // El producto ya está en el carrito
-      setQuantity(existingProduct.quantity); // Cargar la cantidad previamente ingresada
-      setBabyInitial(existingProduct.babyInitial || ""); // Cargar la inicial del bebé si existe
+      setIsInCart(true);
+      setQuantity(existingProduct.quantity);
+      setBabyInitial(existingProduct.babyInitial || "");
     } else {
-      setIsInCart(false); // El producto no está en el carrito
-      setQuantity(1); // Reiniciar la cantidad
-      setBabyInitial(""); // Reiniciar la inicial del bebé
+      setIsInCart(false);
+      setQuantity(1);
+      setBabyInitial("");
     }
-
     setIsModalOpen(true);
   };
 
-  // Función para cerrar el modal
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProduct(null);
     setIsInCart(false);
   };
 
-  // Función para agregar o actualizar el producto en el localStorage
   const updateLocalStorage = () => {
     if (selectedProduct) {
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-      // Validar que la inicial del bebé no esté vacía si el producto lo requiere
       if (
         selectedProduct.nombre.includes("inicial") &&
         (!babyInitial || babyInitial.trim() === "")
@@ -69,7 +64,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
         return;
       }
 
-      // Crear un objeto con la información del producto, cantidad e inicial del bebé
       const productToUpdate = {
         ...selectedProduct,
         quantity,
@@ -78,14 +72,13 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
           : null,
       };
 
-      // Actualizar el carrito
       const updatedCart = isInCart
-        ? currentCart.map((item: any) =>
+        ? cartItems.map((item: any) =>
             item.nombre === selectedProduct.nombre ? productToUpdate : item
           )
-        : [...currentCart, productToUpdate];
+        : [...cartItems, productToUpdate];
 
-      // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       isInCart
         ? toast.success("Producto actualizado en el carrito!")
@@ -94,18 +87,13 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
     }
   };
 
-  // Función para eliminar el producto del localStorage
   const removeFromLocalStorage = () => {
     if (selectedProduct) {
-      // Obtener el carrito actual del localStorage
-      const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-      // Filtrar el carrito para eliminar el producto
-      const updatedCart = currentCart.filter(
+      const updatedCart = cartItems.filter(
         (item: any) => item.nombre !== selectedProduct.nombre
       );
 
-      // Guardar el carrito actualizado en el localStorage
+      setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       toast.success("Producto eliminado del carrito!");
       closeModal();
@@ -117,9 +105,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       {/* Lista de productos */}
       <div className="flex flex-wrap w-full gap-8 justify-center pt-4">
         {productos.map((product, index) => {
-          // Verificar si el producto ya está en el carrito
-          const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
-          const existingProduct = currentCart.find(
+          const existingProduct = cartItems.find(
             (item: any) => item.nombre === product.nombre
           );
           const isAlreadyInCart = !!existingProduct;
@@ -169,7 +155,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                 ? `¿Deseas actualizar el collar ${selectedProduct.nombre.toLowerCase()} en el carrito?`
                 : `¿Deseas agregar el collar  ${selectedProduct.nombre.toLowerCase()} al carrito?`}
             </p>
-
             {/* Selector de cantidad */}
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -184,7 +169,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               />
             </div>
-
             {/* Cuadro de texto para la inicial del bebé */}
             {selectedProduct.nombre.includes("inicial") && (
               <div className="mt-4">
@@ -200,7 +184,6 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                 />
               </div>
             )}
-
             {/* Botones de acción */}
             <div className="flex justify-end mt-4 space-x-2">
               <Button
