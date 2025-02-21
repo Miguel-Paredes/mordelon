@@ -88,6 +88,8 @@ export default function CartPage() {
     const updatedCart = cartItems.filter((_, i) => i !== index);
     setCartItems(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
+    // LLamar al evento creado para agregar o quitar cosas del carrito
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   // Función para manejar el envío del formulario

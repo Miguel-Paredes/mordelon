@@ -83,11 +83,21 @@ body {
 }
 
 .facebook-icon {
-  color: #1877f2; /* Color principal de Facebook */
+  color: #1877f2;
   transition: transform 0.3s, color 0.3s;
 }
 
 .facebook-icon:hover {
-  transform: rotate(360deg); /* Efecto de rotación al pasar el ratón */
-  color: #3b5998; /* Color secundario de Facebook */
+  transform: rotate(360deg);
+  color: #3b5998;
+}
+
+.instagram-icon {
+  color: #e4405f;
+  transition: transform 0.3s, color 0.3s;
+}
+
+.instagram-icon:hover {
+  transform: rotate(360deg);
+  color: #fd1d1d;
 }

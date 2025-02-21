@@ -107,7 +107,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       // Guardar el carrito actualizado en el localStorage
       setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
-
+      // LLamar al evento creado para agregar o quitar cosas del carrito
+      window.dispatchEvent(new Event("cartUpdated"));
       toast.success(
         isInCart
           ? "Producto actualizado en el carrito!"
@@ -128,6 +129,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       // Guardar el carrito actualizado en el localStorage
       setCartItems(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
+      // LLamar al evento creado para agregar o quitar cosas del carrito
+      window.dispatchEvent(new Event("cartUpdated"));
       toast.success("Producto eliminado del carrito!");
       closeModal();
     }

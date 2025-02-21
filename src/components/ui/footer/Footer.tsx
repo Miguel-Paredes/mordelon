@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FaFacebook, FaWhatsapp } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 export const Footer = () => {
   return (
@@ -25,6 +25,13 @@ export const Footer = () => {
           >
             <FaFacebook size={25} className="facebook-icon" />
             <span className="mx-1 text-white hidden md:block">Facebook</span>
+          </Link>
+          <Link
+            href={"https://www.instagram.com/pequeno.mordelon?igsh=dHBqNWh6YWJwcDN3"}
+            className="flex justify-center hover:underline"
+          >
+            <FaInstagram size={25} className="instagram-icon" />
+            <span className="mx-1 text-white hidden md:block">Instagram</span>
           </Link>
         </div>
       </div>
