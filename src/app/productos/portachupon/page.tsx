@@ -83,7 +83,10 @@ export default function Page() {
       } else {
         // Modo de creación
         const path = "portachupones";
-        await addDocument(path, item);
+        const obtenerId = await addDocument(path, item);
+        item.id = obtenerId.id
+        const pathId = `portachupones/${item.id}`
+        await UpdateDocument(pathId, item)
         toast.success("Producto creado exitosamente");
       }
 
@@ -206,7 +209,7 @@ export default function Page() {
 
           {/* Selector de imagen */}
           {image ? (
-            <div>
+            <div className="flex justify-center">
               <Image src={image} alt="Preview" width={100} height={100} />
               <Button
                 onClick={() => {
@@ -246,6 +249,7 @@ export default function Page() {
           <Label>Cantidad</Label>
           <Input
             type="number"
+            min="0"
             {...register("cantidad", { valueAsNumber: true })}
           />
 

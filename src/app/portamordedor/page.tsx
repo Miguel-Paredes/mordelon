@@ -1,4 +1,3 @@
-import { mordedores } from "@/seed";
 import { CardProducts } from "./card-products/card";
 import { ProductosAmigables } from "@/components/ui";
 
@@ -9,7 +8,7 @@ export default function Portamordedor() {
         Portamordedor
       </h2>
       <ProductosAmigables />
-      <CardProducts productos={mordedores} />
+      <CardProducts/>
     </main>
   );
 }

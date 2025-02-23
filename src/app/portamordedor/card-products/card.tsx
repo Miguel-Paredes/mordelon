@@ -1,24 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
-import { Productos } from "@/interfaces/productos.interface";
 import Image from "next/image";
 import { AiOutlineShoppingCart, AiOutlineDelete } from "react-icons/ai";
 import toast from "react-hot-toast";
+import { Products } from "@/interfaces/product.interfaces";
+import { getColection } from "@/lib/firebase";
 
-interface CardProductsProps {
-  productos: Productos[];
-}
-
-export const CardProducts = ({ productos }: CardProductsProps) => {
+export const CardProducts = () => {
   // Estados para controlar la lógica del componente
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Productos | null>(
+  const [selectedProduct, setSelectedProduct] = useState<Products | null>(
     null
   );
   const [quantity, setQuantity] = useState(1);
   const [isInCart, setIsInCart] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Products[]>([])
 
   // Cargar el carrito desde localStorage cuando el componente se monta
   useEffect(() => {
@@ -26,10 +24,20 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
       setCartItems(currentCart);
     }
+    const obtenerChupones = async () => {
+      try {
+        const path = "portamordedores";
+        const informacion = await getColection(path);
+        setProductos(informacion as Products[]);
+      } catch (error: any) {
+        toast.error(error.message || "Error al obtener los productos");
+      }
+    };
+    obtenerChupones();
   }, []);
 
   // Función para abrir el modal y seleccionar el producto
-  const handleAddToCart = (product: Productos) => {
+  const handleAddToCart = (product: Products) => {
     setSelectedProduct(product);
 
     // Verificar si el producto ya está en el carrito
@@ -62,6 +70,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       const productToUpdate = {
         ...selectedProduct,
         quantity,
+        precio: 5
       };
 
       // Actualizar el carrito
@@ -113,6 +122,8 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
           );
           const isAlreadyInCart = !!existingProduct;
 
+          if(product.cantidad <= 0) return null
+
           return (
             <div
               key={index}
@@ -128,8 +139,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
               <div className="p-4">
                 <h3 className="text-lg text-center">{product.nombre}</h3>
                 <p className="text-blue-600 font-bold mt-4 text-center">
-                  <span className="text-gray-600 font-semibold">Costo: </span>$
-                  {product.precio}
+                  <span className="text-gray-600 font-semibold">Costo: </span>$5
                 </p>
               </div>
               <div className="flex justify-center">
@@ -160,7 +170,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
             </p>
 
             {/* Selector de cantidad */}
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700">
                 Cantidad (Máximo 5):
               </label>
@@ -172,7 +182,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
               />
-            </div>
+            </div> */}
 
             {/* Botones de acción */}
             <div className="flex justify-end mt-4 space-x-2">
