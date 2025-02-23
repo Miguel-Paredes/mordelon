@@ -13,10 +13,11 @@ export const useUser = () => {
   const router = useRouter();
 
   // Rutas protegidas para usuarios no autenticados
-  const protectedRoutes = ["/pedidos", "/administrador"];
+  const protectedRoutes = ["/pedidos", "/administrador", "/productos/portachupon", "/productos/api/upload", "/productos/api/delete"];
 
   // Rutas exclusivas para el administrador
-  const adminOnlyRoutes = ["/administrador"];
+  const adminOnlyRoutes = ["/administrador", "/productos/portachupon", "/productos/api/upload", "/productos/api/delete"];
+  // const adminOnlyRoutes = ["/administrador"];
 
   // Rutas exclusivas para clientes
   const clientOnlyRoutes = ["/pedidos", "/carrito"];

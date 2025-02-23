@@ -56,7 +56,10 @@ export const Navbar = () => {
   return (
     <div>
       <nav className="flex items-center justify-between flex-wrap bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-700 pl-2 pr-6 lg:px-20 py-2 shadow-lg lg:rounded-b-3xl">
-        <div className="flex items-center flex-shrink-0 text-white w-4/5 md:w-max">
+        <Link
+          href={"/"}
+          className="flex items-center flex-shrink-0 text-white w-4/5 md:w-max"
+        >
           <Image
             src="/logo.png"
             width={300}
@@ -69,7 +72,7 @@ export const Navbar = () => {
           >
             Pequeño Mordelón
           </h1>
-        </div>
+        </Link>
         <div className="lg:hidden">
           <button
             onClick={toggleMenu}
@@ -84,9 +87,6 @@ export const Navbar = () => {
           } absolute top-20 shadow-sm lg:shadow-none left-0 w-full opacity-100 rounded-b-2xl lg:rounded-none bg-cyan-700 lg:bg-transparent lg:static lg:flex lg:items-center lg:w-auto z-50`}
         >
           <div className="flex flex-col lg:flex-row justify-between items-center gap-4 w-full p-4 lg:p-0">
-            <Link href="/" className="text-white rounded-lg hover:underline">
-              Inicio
-            </Link>
             <Link
               href={"/collares-de-lactancia"}
               className="text-white rounded-lg hover:underline"
@@ -94,13 +94,13 @@ export const Navbar = () => {
               Collares
             </Link>
             <Link
-              href={"/portachupon"}
+              href={isAdmin ? "/productos/portachupon" : "/portachupon"}
               className="text-white rounded-lg hover:underline"
             >
               Portachupón
             </Link>
             <Link
-              href={"/portamordedor"}
+              href={isAdmin ? "/productos/portamordedor" : "/portamordedor"}
               className="text-white rounded-lg hover:underline"
             >
               Portamordedor
@@ -152,7 +152,7 @@ export const Navbar = () => {
           !isUserLoggedIn ? "justify-between" : "justify-end"
         }`}
       >
-        {!isUserLoggedIn && (
+        {!isUserLoggedIn && !isAdmin && (
           <span className="text-xs md:text-sm">
             Para poder realizar pedidos, por favor inicie sesión en su cuenta.
             Si aún no tiene una cuenta, puede registrarse fácilmente.{" "}
@@ -164,16 +164,19 @@ export const Navbar = () => {
             </Link>
           </span>
         )}
-        <Link href={"/carrito"}>
-          <div className="relative mr-8 mt-4">
-            {cartItems && cartItems.length > 0 && (
-              <span className="absolute text-xs rounded-full px-1 font-bold -top-2 -right-2 bg-blue-700 text-white">
-                {cartItems.length}
-              </span>
-            )}
-            <TiShoppingCart className="w-6 h-6" />
-          </div>
-        </Link>
+
+        {!isAdmin && (
+          <Link href={"/carrito"}>
+            <div className="relative mr-8 mt-4">
+              {cartItems && cartItems.length > 0 && (
+                <span className="absolute text-xs rounded-full px-1 font-bold -top-2 -right-2 bg-blue-700 text-white">
+                  {cartItems.length}
+                </span>
+              )}
+              <TiShoppingCart className="w-6 h-6" />
+            </div>
+          </Link>
+        )}
       </div>
     </div>
   );

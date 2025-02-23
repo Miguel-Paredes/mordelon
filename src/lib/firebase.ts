@@ -124,3 +124,7 @@ export const updateDocument = async (path: string, documentId: string) => {
     console.error("Error actualizando el documento: ", error);
   }
 }
+
+export const UpdateDocument = ( path: string, data : any ) => {
+  return updateDoc(doc(db,path), data)
+}

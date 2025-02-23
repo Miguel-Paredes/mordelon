@@ -156,7 +156,7 @@ export default function CartPage() {
       });
       setIsLoading(false);
     }finally{
-      if(pedido_realizado) return toast.success("Pedido realizado exitosamente", { duration: 5000 });
+      if(pedido_realizado) return toast.success("Pedido realizado exitosamente, estamos verificando que haya realizado la transferencia", { duration: 5000 });
     }
   };
 

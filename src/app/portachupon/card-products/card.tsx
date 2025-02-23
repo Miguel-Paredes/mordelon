@@ -6,6 +6,8 @@ import Image from "next/image";
 import { AiOutlineShoppingCart, AiOutlineDelete } from "react-icons/ai";
 import toast from "react-hot-toast";
 import { Portachupones } from "@/seed";
+import { Products } from "@/interfaces/product.interfaces";
+import { getColection } from "@/lib/firebase";
 
 interface CardProductsProps {
   productos: Productos[];
@@ -21,6 +23,7 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isInCart, setIsInCart] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [clips, setClips] = useState<Products[]>([]);
 
   // Cargar el carrito desde localStorage cuando el componente se monta
   useEffect(() => {
@@ -28,6 +31,16 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
       const currentCart = JSON.parse(localStorage.getItem("cart") || "[]");
       setCartItems(currentCart);
     }
+    const obtenerChupones = async () => {
+      try {
+        const path = "portachupones";
+        const informacion = await getColection(path);
+        setClips(informacion as Products[]);
+      } catch (error: any) {
+        toast.error(error.message || "Error al obtener los productos");
+      }
+    };
+    obtenerChupones();
   }, []);
 
   // Función para abrir el modal y seleccionar el producto
@@ -227,25 +240,32 @@ export const CardProducts = ({ productos }: CardProductsProps) => {
                   Selecciona hasta {quantity} imágenes:
                 </label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {Portachupones.map((clip, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleImageSelect(clip.imagen)}
-                      className={`w-16 h-16 rounded-full cursor-pointer ${
-                        selectedImages.includes(clip.imagen)
-                          ? "border-2 border-blue-500"
-                          : ""
-                      }`}
-                    >
-                      <Image
-                        src={clip.imagen}
-                        alt={`Diseño ${index}`}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    </div>
-                  ))}
+                  {clips.map((clip) => {
+                    // Calcula las clases previamente
+                    const isSelected = selectedImages.includes(clip.imagen);
+                    const borderClass = isSelected
+                      ? "border-2 border-blue-500"
+                      : "";
+
+                    // Si la cantidad es 0, no renderices la imagen
+                    if (clip.cantidad <= 0) return null;
+
+                    return (
+                      <div
+                        key={clip.imagen} // Usa un identificador único
+                        onClick={() => handleImageSelect(clip.imagen)}
+                        className={`w-16 h-16 rounded-full cursor-pointer ${borderClass}`}
+                      >
+                        <Image
+                          src={clip.imagen}
+                          alt={`Diseño ${clip.imagen}`} // Mejor tener una clave única aquí también
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
