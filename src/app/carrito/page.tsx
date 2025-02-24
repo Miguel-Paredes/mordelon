@@ -108,6 +108,7 @@ export default function CartPage() {
     for (let i = 0; i < pedidos.length; i++) {
       const pedido = pedidos[i];
       if (pedido.estado === 'En revisión') {
+        router.push("/transferencia")
         return toast(`Primero debes de pagar tu anterior pedido que es de $${pedido.total}`, { icon: '😅', duration: 5000 });
       }
     }
@@ -150,6 +151,7 @@ export default function CartPage() {
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
       setIsModalOpen(false); // Cerrar el modal después de enviar
+      router.push("/transferencia")
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error al realizar el pedido.", {
         duration: 5000,
