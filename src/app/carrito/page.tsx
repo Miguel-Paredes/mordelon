@@ -16,6 +16,7 @@ import { addDocument, getColection } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { orderBy, serverTimestamp } from "firebase/firestore";
 import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
+import { useRouter } from "next/router";
 
 interface CartItem {
   nombre: string;
@@ -49,6 +50,7 @@ export default function CartPage() {
     lat: -0.2187979,
     lng: -78.5122329,
   });
+  const router = useRouter()
 
   const iniciarMapa = async () => {
     const loader = new Loader({
@@ -166,6 +168,7 @@ export default function CartPage() {
     const pedidosData = await getColection(path, query);
     setPedidos(pedidosData as Pedidos_Usarios[]);
     if (pedidos && pedidos[0].estado === "En revisión") {
+      router.push("/transferencia")
       return toast(
         `Primero debes de pagar tu anterior pedido que es de $${pedidos[0].total}`,
         { icon: "😅", duration: 5000 }
@@ -214,6 +217,7 @@ export default function CartPage() {
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
       setIsModalOpen(false); // Cerrar el modal después de enviar
+      router.push("/transferencia")
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error al realizar el pedido.", {
         duration: 5000,

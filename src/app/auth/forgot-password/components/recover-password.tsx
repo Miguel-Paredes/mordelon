@@ -40,6 +40,7 @@ export default function RecoverPassword() {
     setisLoading(true);
     try {
       await sendtResetEmail(user.email)
+      toast.success("Verifique su correo para restablecer su contraseña. Si no lo encuentra en la bandeja de entrada, por favor revise la carpeta de Spam.", { duration : 5000 })
       router.push('/')
     } catch (error: any) {
       toast.error(

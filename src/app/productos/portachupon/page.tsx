@@ -286,7 +286,7 @@ export default function Page() {
             </TableHeader>
             <TableBody>
               {productos.map((producto, index) => (
-                <TableRow key={producto.id}>
+                <TableRow key={index} className={`${producto.cantidad === 0 ? "bg-red-200" : ""}`}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{producto.nombre}</TableCell>
                   <TableCell>
