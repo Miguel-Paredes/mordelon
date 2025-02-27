@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@files-ui/react": "^1.2.4",
+    "@googlemaps/js-api-loader": "^1.16.8",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.1.1",
@@ -31,6 +32,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

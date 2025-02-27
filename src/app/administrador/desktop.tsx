@@ -230,7 +230,9 @@ export default function PedidosDesktop() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <p className="text-center">{pedido.direccion}</p>
+                      <Link href={pedido.direccion} className="text-center text-blue-500 underline">
+                        Ver Dirección
+                      </Link> 
                     </TableCell>
                     <TableCell>
                       <p className="text-center">{pedido.nombre_bebe}</p>

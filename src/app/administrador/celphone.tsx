@@ -211,7 +211,9 @@ export default function PedidosDesktop() {
                 </div>
                 <div className="flex justify-between">
                   <b>Dirección:</b>
-                  <span>{pedido.direccion}</span>
+                  <Link href={pedido.direccion} className="text-blue-500 underline">
+                        Ver Dirección
+                      </Link>
                 </div>
                 <div>
                   <b>Descripción:</b>

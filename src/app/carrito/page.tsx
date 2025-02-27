@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Loader } from "@googlemaps/js-api-loader";
 import {
   Button,
   Dialog,
@@ -11,7 +12,6 @@ import {
 import Image from "next/image";
 import * as z from "zod";
 import { useUser } from "../hooks/us-user";
-import Router from "next/router";
 import { addDocument, getColection } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { orderBy, serverTimestamp } from "firebase/firestore";
@@ -41,8 +41,72 @@ export default function CartPage() {
     nombre_bebe: "",
     direccion: "",
   });
+  const MapRef = React.useRef<HTMLDivElement>(null);
+  const [markerPosition, setMarkerPosition] = useState<{
+    lat: number;
+    lng: number;
+  }>({
+    lat: -0.2187979,
+    lng: -78.5122329,
+  });
+
+  const iniciarMapa = async () => {
+    const loader = new Loader({
+      apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
+      version: "weekly",
+    });
+
+    const { Map } = await loader.importLibrary("maps");
+    const { Marker } = (await loader.importLibrary(
+      "marker"
+    )) as google.maps.MarkerLibrary;
+
+    // Posición inicial del mapa
+    const initialPosition = {
+      lat: -0.2187979,
+      lng: -78.5122329,
+    };
+
+    // Opciones para el mapa
+    const mapOptions: google.maps.MapOptions = {
+      center: initialPosition,
+      zoom: 17,
+      mapId: "Mapa Pequeño Mordelón",
+    };
+
+    // Configuración del mapa
+    const mapa = new Map(MapRef.current as HTMLDivElement, mapOptions);
+
+    // Crear un marcador estático
+    const marker = new Marker({
+      position: initialPosition,
+      map: mapa,
+      title: "Marcador Estático",
+    });
+
+    // Actualizar la posición del marcador cuando el mapa se mueva
+    mapa.addListener("center_changed", () => {
+      const newCenter = mapa.getCenter();
+      if (newCenter) {
+        const newPosition = {
+          lat: newCenter.lat(),
+          lng: newCenter.lng(),
+        };
+        setMarkerPosition(newPosition);
+        marker.setPosition(newCenter); // Mover el marcador al centro del mapa
+      }
+    });
+  };
+
+  if (isModalOpen) {
+    iniciarMapa();
+  }
+
+  useEffect(() => {
+    loadCartItems();
+  }, []);
+
   const user = useUser();
-  const router = Router;
 
   // Esquema de validación del formulario
   const formSchema = z.object({
@@ -65,15 +129,12 @@ export default function CartPage() {
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
     const updatedCart = storedCart.map((item: CartItem) => ({
       ...item,
-      selectedImages: Array.isArray(item.selectedImages) ? item.selectedImages : [], // Asegúrate de que sea un array
+      selectedImages: Array.isArray(item.selectedImages)
+        ? item.selectedImages
+        : [], // Asegúrate de que sea un array
     }));
     setCartItems(updatedCart);
   };
-
-  // Cargar los productos del carrito cuando se monta el componente
-  useEffect(() => {
-    loadCartItems();
-  }, []);
 
   // Función para calcular el total del carrito
   const calculateTotal = () => {
@@ -94,10 +155,9 @@ export default function CartPage() {
 
   // Función para manejar el envío del formulario
   const onSubmit = async () => {
-    let pedido_realizado = false
+    let pedido_realizado = false;
     if (!user) {
-      toast.error("Debes iniciar sesión para realizar un pedido.");
-      return router.push("/auth");
+      return toast.error("Debes iniciar sesión para realizar un pedido.");
     }
 
     const id_usuario = user?.uid;
@@ -105,13 +165,16 @@ export default function CartPage() {
     const query = [orderBy("createdAt", "desc")];
     const pedidosData = await getColection(path, query);
     setPedidos(pedidosData as Pedidos_Usarios[]);
-    for (let i = 0; i < pedidos.length; i++) {
-      const pedido = pedidos[i];
-      if (pedido.estado === 'En revisión') {
-        router.push("/transferencia")
-        return toast(`Primero debes de pagar tu anterior pedido que es de $${pedido.total}`, { icon: '😅', duration: 5000 });
-      }
+    if (pedidos && pedidos[0].estado === "En revisión") {
+      return toast(
+        `Primero debes de pagar tu anterior pedido que es de $${pedidos[0].total}`,
+        { icon: "😅", duration: 5000 }
+      );
     }
+
+    const direccion = `https://www.google.com/maps?q=${markerPosition.lat.toFixed(
+      6
+    )},${markerPosition.lng.toFixed(6)}`;
 
     setIsLoading(true);
     try {
@@ -125,13 +188,13 @@ export default function CartPage() {
         babyInitial: cartItems.map((item) => item.babyInitial || ""),
         total: calculateTotal(),
         nombre_bebe: formData.nombre_bebe,
-        direccion: formData.direccion,
+        direccion: direccion,
       });
       // Crear el pedido en Firebase
       const pedidoCliente = await addDocument(`users/${user.uid}/pedidos`, {
         ...validatedData,
         createdAt: serverTimestamp(),
-        estado: "En revisión"
+        estado: "En revisión",
       });
       await addDocument(`pedidos`, {
         ...validatedData,
@@ -140,9 +203,9 @@ export default function CartPage() {
         cliente: user.name,
         estado: "En revisión",
         idcliente: user.uid,
-        idpedido: pedidoCliente.id
+        idpedido: pedidoCliente.id,
       });
-      pedido_realizado = true
+      pedido_realizado = true;
 
       // Limpiar el carrito del localStorage
       localStorage.removeItem("cart");
@@ -151,14 +214,18 @@ export default function CartPage() {
       setCartItems([]); // También limpiamos el estado local
       setIsLoading(false);
       setIsModalOpen(false); // Cerrar el modal después de enviar
-      router.push("/transferencia")
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error al realizar el pedido.", {
         duration: 5000,
       });
       setIsLoading(false);
-    }finally{
-      if(pedido_realizado) return toast.success("Pedido realizado exitosamente, estamos verificando que haya realizado la transferencia", { duration: 5000 });
+    } finally {
+      if (pedido_realizado)
+        return toast.success(
+          "Pedido realizado exitosamente, estamos verificando que haya realizado la transferencia",
+          { duration: 5000 }
+        );
+      window.dispatchEvent(new Event("cartUpdated"));
     }
   };
 
@@ -203,7 +270,7 @@ export default function CartPage() {
                 <div className="flex-1 ml-4">
                   <div className="flex justify-start">
                     <h3 className="text-lg font-semibold mr-4">
-                      {item.nombre}                    
+                      {item.nombre}
                     </h3>
                     {item.nombre.includes("diseños a elección") && (
                       <Dialog>
@@ -215,21 +282,20 @@ export default function CartPage() {
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle>
-                              <p className="text-center">
-                                Clips elegidos
-                              </p>
+                              <p className="text-center">Clips elegidos</p>
                             </DialogTitle>
                             <div className="flex justify-center space-x-2">
-                              {item.selectedImages && item.selectedImages.map((imagen, index) => (
-                                <Image
-                                  key={index}
-                                  src={imagen}
-                                  alt={"Imágen clip"}
-                                  width={1000}
-                                  height={1000}
-                                  className="h-16 w-16 rounded-full border-2 border-gray-200"
-                                />
-                              ))}
+                              {item.selectedImages &&
+                                item.selectedImages.map((imagen, index) => (
+                                  <Image
+                                    key={index}
+                                    src={imagen}
+                                    alt={"Imágen clip"}
+                                    width={1000}
+                                    height={1000}
+                                    className="h-16 w-16 rounded-full border-2 border-gray-200"
+                                  />
+                                ))}
                             </div>
                           </DialogHeader>
                         </DialogContent>
@@ -278,10 +344,13 @@ export default function CartPage() {
             <h2 className="text-xl font-bold mb-4">Datos del Pedido</h2>
 
             {/* Formulario dentro del modal */}
-            <form onSubmit={(e) => {
-              e.preventDefault()
-              onSubmit()
-            }} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit();
+              }}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Nombre del Bebé
@@ -289,6 +358,7 @@ export default function CartPage() {
                 <input
                   type="text"
                   value={formData.nombre_bebe}
+                  required
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -300,23 +370,7 @@ export default function CartPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      direccion: e.target.value.toUpperCase(),
-                    })
-                  }
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Av. Pedro Vicente Maldonado S11-122, Quito 170111"
-                />
-              </div>
+              <div className="w-[400px] h-[400px] mx-auto" ref={MapRef} />
 
               {/* Botones del modal */}
               <div className="flex justify-end space-x-2">

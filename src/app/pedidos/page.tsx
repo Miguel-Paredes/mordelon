@@ -14,12 +14,13 @@ import {
   TableRow,
 } from "@/components/ui";
 import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
-import { getColection, updateDocument } from "@/lib/firebase";
+import { getColection } from "@/lib/firebase";
 import { orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useUser } from "../hooks/us-user";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Pedidos() {
   const user = useUser();
@@ -203,7 +204,7 @@ export default function Pedidos() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <div className="flex justify-center">
-                            <Button variant="outline">Ver</Button>
+                            <Button variant="outline">Detalles</Button>
                           </div>
                         </DialogTrigger>
                         <DialogContent>
@@ -211,7 +212,12 @@ export default function Pedidos() {
                             <div className="flex justify-center">
                               <DialogTitle>Detalles del Pedido</DialogTitle>
                             </div>
-                            <div className="flex justify-end">
+                            <div className="flex justify-between">
+                              <div className="p-2 my-2 w-max">
+                                <span className="flex justify-center">Dirección:
+                                <Link href={pedido.direccion} className="text-blue-500 underline flex justify-center ml-1">Ver</Link>
+                                </span>
+                              </div>
                               <p className="p-2 my-2 border-2 border-solid border-gray-200 rounded-lg w-max">
                                 Total: ${pedido.total.toFixed(2)}
                               </p>
@@ -234,6 +240,7 @@ export default function Pedidos() {
                                   <TableCell className="text-center">
                                     {pedido.cantidad[idx]}
                                   </TableCell>
+                                  
                                   <TableCell>
                                     ${pedido.price[idx].toFixed(2)}
                                   </TableCell>
