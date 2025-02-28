@@ -16,7 +16,7 @@ import { addDocument, getColection } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { orderBy, serverTimestamp } from "firebase/firestore";
 import { Pedidos_Usarios } from "@/interfaces/pedidos.interface";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
   nombre: string;
