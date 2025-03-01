@@ -33,7 +33,7 @@ interface CartItem {
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(true); // Estado para controlar el modal
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para controlar el modal
   const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [formData, setFormData] = useState<{
     nombre_bebe: string;
