@@ -33,7 +33,7 @@ interface CartItem {
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Estado para controlar el modal
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(true); // Estado para controlar el modal
   const [pedidos, setPedidos] = useState<Pedidos_Usarios[]>([]);
   const [formData, setFormData] = useState<{
     nombre_bebe: string;
@@ -57,51 +57,104 @@ export default function CartPage() {
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
       version: "weekly",
     });
-
+  
     const { Map } = await loader.importLibrary("maps");
-    const { Marker } = (await loader.importLibrary(
-      "marker"
-    )) as google.maps.MarkerLibrary;
-
-    // Posición inicial del mapa
-    const initialPosition = {
-      lat: -0.2187979,
-      lng: -78.5122329,
-    };
-
-    // Opciones para el mapa
-    const mapOptions: google.maps.MapOptions = {
-      center: initialPosition,
-      zoom: 17,
-      mapId: "Mapa Pequeño Mordelón",
-    };
-
-    // Configuración del mapa
-    const mapa = new Map(MapRef.current as HTMLDivElement, mapOptions);
-
-    // Crear un marcador estático
-    const marker = new Marker({
-      position: initialPosition,
-      map: mapa,
-      title: "Marcador Estático",
-    });
-
-    // Actualizar la posición del marcador cuando el mapa se mueva
-    mapa.addListener("center_changed", () => {
-      const newCenter = mapa.getCenter();
-      if (newCenter) {
-        const newPosition = {
-          lat: newCenter.lat(),
-          lng: newCenter.lng(),
-        };
-        setMarkerPosition(newPosition);
-        marker.setPosition(newCenter); // Mover el marcador al centro del mapa
-      }
-    });
+    const { Marker } = (await loader.importLibrary("marker")) as google.maps.MarkerLibrary;
+  
+    // Verificar si el navegador soporta geolocalización
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Obtener las coordenadas del usuario
+          const userPosition = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+  
+          // Opciones para el mapa
+          const mapOptions: google.maps.MapOptions = {
+            center: userPosition, // Centrar el mapa en la ubicación del usuario
+            zoom: 17,
+            mapId: "Mapa Pequeño Mordelón",
+          };
+  
+          // Configuración del mapa
+          const mapa = new Map(MapRef.current as HTMLDivElement, mapOptions);
+  
+          // Crear un marcador en la ubicación del usuario
+          const marker = new Marker({
+            position: userPosition,
+            map: mapa,
+            title: "Ubicación del Usuario",
+          });
+  
+          // Actualizar la posición del marcador cuando el mapa se mueva
+          mapa.addListener("center_changed", () => {
+            const newCenter = mapa.getCenter();
+            if (newCenter) {
+              const newPosition = {
+                lat: newCenter.lat(),
+                lng: newCenter.lng(),
+              };
+              setMarkerPosition(newPosition);
+              marker.setPosition(newCenter); // Mover el marcador al centro del mapa
+            }
+          });
+        },
+        (error) => {
+          console.error("Error al obtener la ubicación:", error.message);
+  
+          // Si hay un error, usar una posición predeterminada
+          const defaultPosition = {
+            lat: -0.2187979,
+            lng: -78.5122329,
+          };
+  
+          const mapOptions: google.maps.MapOptions = {
+            center: defaultPosition,
+            zoom: 17,
+            mapId: "Mapa Pequeño Mordelón",
+          };
+  
+          const mapa = new Map(MapRef.current as HTMLDivElement, mapOptions);
+  
+          const marker = new Marker({
+            position: defaultPosition,
+            map: mapa,
+            title: "Marcador Estático",
+          });
+        }
+      );
+    } else {
+      console.error("Geolocalización no es soportada por este navegador.");
+  
+      // Usar una posición predeterminada si no hay soporte para geolocalización
+      const defaultPosition = {
+        lat: -0.2187979,
+        lng: -78.5122329,
+      };
+  
+      const mapOptions: google.maps.MapOptions = {
+        center: defaultPosition,
+        zoom: 17,
+        mapId: "Mapa Pequeño Mordelón",
+      };
+  
+      const mapa = new Map(MapRef.current as HTMLDivElement, mapOptions);
+  
+      const marker = new Marker({
+        position: defaultPosition,
+        map: mapa,
+        title: "Marcador Estático",
+      });
+    }
   };
 
   if (isModalOpen) {
-    iniciarMapa();
+    useEffect(() => {
+      iniciarMapa();
+    }, [])
+    
   }
 
   useEffect(() => {
