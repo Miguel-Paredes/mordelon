@@ -17,7 +17,7 @@ export default function RootLayout({
   const isInAuthRoutes = authRoutes.includes(pathName)
   if(user&&isInAuthRoutes) return redirect('/')
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
         {children}
         <Toaster/>
